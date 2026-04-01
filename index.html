@@ -72,6 +72,11 @@ html, body {
   box-shadow: 0 2px 8px rgba(13,61,61,0.08);
   gap: 1rem;
   z-index: 10;
+  position: relative;
+}
+/* Board page nav is slimmer for projector mode */
+#page-board .nav {
+  height: 42px;
 }
 .logo {
   font-family: 'Bebas Neue', sans-serif;
@@ -90,10 +95,10 @@ html, body {
 .logo em {
   font-family: 'Playfair Display', serif;
   font-style: italic;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   font-weight: 700;
   color: var(--teal-lt);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   line-height: 1;
   display: block;
 }
@@ -426,7 +431,106 @@ html, body {
    Each section is fixed height except
    board-grid which takes all remaining
 ════════════════════════════════════ */
-#page-board { background: var(--cream); position: relative }
+#page-board { background: var(--cream); position: relative; overflow: hidden }
+
+/* ── disco ball decoration (top-left, like the invitation) ── */
+.disco-deco {
+  position: absolute;
+  top: -18px;
+  left: -18px;
+  width: 200px;
+  height: 200px;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.18;
+}
+.disco-deco svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── disco ball top-right (smaller) ── */
+.disco-deco-right {
+  position: absolute;
+  top: -10px;
+  right: 30px;
+  width: 110px;
+  height: 110px;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.12;
+}
+.disco-deco-right svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── floating sparkles layer ── */
+.sparkle-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.sparkle {
+  position: absolute;
+  color: var(--teal);
+  font-size: 0.9rem;
+  opacity: 0;
+  animation: sparkle-float 4s ease-in-out infinite;
+}
+.sparkle:nth-child(1)  { top: 8%; left: 3%;  animation-delay: 0s;   font-size: 1.1rem }
+.sparkle:nth-child(2)  { top: 15%; right: 5%; animation-delay: 0.8s; font-size: 0.7rem }
+.sparkle:nth-child(3)  { bottom: 12%; left: 6%; animation-delay: 1.6s }
+.sparkle:nth-child(4)  { bottom: 8%; right: 3%; animation-delay: 2.4s; font-size: 1.2rem }
+.sparkle:nth-child(5)  { top: 45%; left: 1.5%; animation-delay: 0.4s; font-size: 0.65rem }
+.sparkle:nth-child(6)  { top: 60%; right: 1.5%; animation-delay: 1.2s; font-size: 0.8rem }
+.sparkle:nth-child(7)  { top: 30%; right: 2%; animation-delay: 2s; font-size: 0.6rem }
+.sparkle:nth-child(8)  { bottom: 25%; left: 2%; animation-delay: 3s; font-size: 0.75rem }
+.sparkle:nth-child(9)  { top: 75%; left: 4%; animation-delay: 1.8s; font-size: 0.55rem }
+.sparkle:nth-child(10) { top: 20%; left: 50%; animation-delay: 2.8s; font-size: 0.5rem }
+@keyframes sparkle-float {
+  0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg) }
+  30%      { opacity: 0.55 }
+  50%      { opacity: 0.8; transform: scale(1.1) rotate(180deg) }
+  70%      { opacity: 0.45 }
+}
+
+/* ── light beams from disco ball ── */
+.light-beams {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background:
+    conic-gradient(from 30deg at 10% 0%,
+      transparent 0deg,
+      var(--teal) 2deg,
+      transparent 4deg,
+      transparent 25deg,
+      var(--teal) 27deg,
+      transparent 29deg,
+      transparent 55deg,
+      var(--teal) 57deg,
+      transparent 59deg,
+      transparent 90deg,
+      var(--teal) 92deg,
+      transparent 94deg,
+      transparent 130deg,
+      var(--teal) 132deg,
+      transparent 134deg,
+      transparent 170deg,
+      var(--teal) 172deg,
+      transparent 174deg,
+      transparent 360deg);
+  animation: beam-rotate 25s linear infinite;
+}
+@keyframes beam-rotate { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
 
 .score-bar {
   height: var(--score-h);
@@ -439,6 +543,11 @@ html, body {
   background: var(--white);
   border-bottom: 1.5px solid var(--teal-b);
   scrollbar-width: none;
+  position: relative;
+  z-index: 2;
+}
+#page-board .score-bar {
+  height: 48px;
 }
 .score-bar::-webkit-scrollbar { display: none }
 
@@ -498,41 +607,63 @@ html, body {
 .board-area {
   flex: 1;
   overflow: hidden;
-  padding: 0.6rem 0.8rem 0.45rem;
+  padding: 0.4rem 0.5rem 0.3rem;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 2;
 }
 .board-grid {
   flex: 1;
   display: grid;
-  gap: 5px;
+  gap: 4px;
   overflow: hidden;
 }
 
 .cat-cell {
-  background: var(--teal);
-  border-radius: 6px;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dk) 100%);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.24rem 0.3rem;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(0.54rem, 1.15vw, 0.84rem);
-  letter-spacing: 0.07em;
+  padding: 0.3rem 0.4rem;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(0.56rem, 1.2vw, 0.88rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
   color: var(--white);
   text-align: center;
   line-height: 1.2;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.14);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+.cat-cell::before {
+  content: '✦';
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  font-size: 0.45rem;
+  opacity: 0.35;
+}
+.cat-cell::after {
+  content: '✦';
+  position: absolute;
+  bottom: 3px;
+  right: 6px;
+  font-size: 0.35rem;
+  opacity: 0.25;
 }
 .q-cell {
-  background: var(--white);
+  background: linear-gradient(145deg, var(--white) 0%, #f7f4ef 100%);
   border: 1.5px solid var(--teal-b);
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
   position: relative;
   overflow: hidden;
   /* height comes from grid rows — no fixed px height */
@@ -552,8 +683,8 @@ html, body {
 .q-cell:hover:not(.used)::after { transform: translateX(130%) }
 .q-cell:hover:not(.used) {
   border-color: var(--teal);
-  transform: translateY(-2px) scale(1.022);
-  box-shadow: 0 6px 20px rgba(13,61,61,0.13), 0 0 0 2px var(--teal-pale2);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(13,61,61,0.15), 0 0 0 2px var(--teal-pale2), inset 0 0 12px rgba(26,133,133,0.06);
   z-index: 2;
 }
 .q-cell.used {
@@ -561,12 +692,21 @@ html, body {
   border-color: var(--cream-dark);
   cursor: default;
 }
+.q-cell.used::before {
+  content: '✧';
+  position: absolute;
+  font-size: 0.7rem;
+  color: var(--teal-b);
+  opacity: 0.4;
+}
 .dollar {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(0.82rem, 2.2vw, 1.75rem);
-  letter-spacing: 0.05em;
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(0.9rem, 2.4vw, 1.9rem);
+  letter-spacing: 0.03em;
   color: var(--teal);
   pointer-events: none;
+  text-shadow: 0 1px 2px rgba(26,133,133,0.12);
 }
 .q-cell.used .dollar { opacity: 0 }
 
@@ -794,9 +934,10 @@ html, body {
   width: 100%;
   text-align: center;
   position: relative;
-  box-shadow: 0 20px 60px rgba(13,61,61,0.18);
+  box-shadow: 0 20px 60px rgba(13,61,61,0.18), 0 0 0 1px rgba(26,133,133,0.08);
   animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
   overflow: hidden;
+  background: linear-gradient(180deg, var(--white) 0%, #f9f6f1 100%);
 }
 @keyframes popIn { from { opacity:0; transform:scale(0.9) } to { opacity:1; transform:scale(1) } }
 
@@ -1160,6 +1301,64 @@ html, body {
      Host-projected game board
 ═══════════════════════════════════════ -->
 <div id="page-board" class="page">
+
+  <!-- Disco ball decorations -->
+  <div class="disco-deco">
+    <svg viewBox="0 0 200 200" fill="none">
+      <!-- hanging line -->
+      <line x1="100" y1="0" x2="100" y2="38" stroke="#1a8585" stroke-width="2"/>
+      <!-- main ball -->
+      <circle cx="100" cy="100" r="55" stroke="#1a8585" stroke-width="2" fill="none"/>
+      <!-- grid lines -->
+      <ellipse cx="100" cy="100" rx="55" ry="22" stroke="#1a8585" stroke-width="1.2" fill="none" opacity=".5"/>
+      <ellipse cx="100" cy="100" rx="55" ry="38" stroke="#1a8585" stroke-width="1" fill="none" opacity=".4"/>
+      <ellipse cx="100" cy="88" rx="42" ry="16" stroke="#1a8585" stroke-width="1" fill="none" opacity=".35"/>
+      <ellipse cx="100" cy="112" rx="42" ry="16" stroke="#1a8585" stroke-width="1" fill="none" opacity=".35"/>
+      <line x1="45" y1="100" x2="155" y2="100" stroke="#1a8585" stroke-width="1.2" opacity=".45"/>
+      <line x1="100" y1="45" x2="100" y2="155" stroke="#1a8585" stroke-width="1.2" opacity=".45"/>
+      <!-- sparkle diamonds -->
+      <path d="M165 65 L168 58 L171 65 L168 72Z" fill="#1a8585" opacity=".5"/>
+      <path d="M35 78 L38 71 L41 78 L38 85Z" fill="#1a8585" opacity=".4"/>
+      <path d="M158 130 L160 126 L162 130 L160 134Z" fill="#1a8585" opacity=".35"/>
+      <!-- small sparkle dots -->
+      <circle cx="170" cy="85" r="2" fill="#1a8585" opacity=".4"/>
+      <circle cx="30" cy="115" r="1.8" fill="#1a8585" opacity=".3"/>
+      <circle cx="160" cy="50" r="1.5" fill="#1a8585" opacity=".35"/>
+      <!-- four-point stars -->
+      <path d="M180 100 L183 96 L186 100 L183 104Z" fill="#1a8585" opacity=".3"/>
+      <path d="M22 90 L25 86 L28 90 L25 94Z" fill="#1a8585" opacity=".25"/>
+    </svg>
+  </div>
+
+  <div class="disco-deco-right">
+    <svg viewBox="0 0 120 120" fill="none">
+      <line x1="60" y1="0" x2="60" y2="24" stroke="#1a8585" stroke-width="1.5"/>
+      <circle cx="60" cy="62" r="34" stroke="#1a8585" stroke-width="1.5" fill="none"/>
+      <ellipse cx="60" cy="62" rx="34" ry="14" stroke="#1a8585" stroke-width="1" fill="none" opacity=".45"/>
+      <ellipse cx="60" cy="62" rx="34" ry="24" stroke="#1a8585" stroke-width="0.8" fill="none" opacity=".35"/>
+      <line x1="26" y1="62" x2="94" y2="62" stroke="#1a8585" stroke-width="1" opacity=".4"/>
+      <line x1="60" y1="28" x2="60" y2="96" stroke="#1a8585" stroke-width="1" opacity=".4"/>
+      <path d="M100 40 L102 36 L104 40 L102 44Z" fill="#1a8585" opacity=".4"/>
+      <circle cx="108" cy="55" r="1.5" fill="#1a8585" opacity=".35"/>
+    </svg>
+  </div>
+
+  <!-- Light beams -->
+  <div class="light-beams"></div>
+
+  <!-- Floating sparkles -->
+  <div class="sparkle-layer">
+    <span class="sparkle">✦</span>
+    <span class="sparkle">✧</span>
+    <span class="sparkle">✦</span>
+    <span class="sparkle">✧</span>
+    <span class="sparkle">✦</span>
+    <span class="sparkle">✧</span>
+    <span class="sparkle">✦</span>
+    <span class="sparkle">✧</span>
+    <span class="sparkle">✦</span>
+    <span class="sparkle">✧</span>
+  </div>
 
   <nav class="nav">
     <button class="logo" onclick="go('setup')">
