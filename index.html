@@ -1131,38 +1131,7 @@ html, body {
 }
 .manual-add-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-pale) }
 
-/* ════════════════════════════════════
-   DEMO BANNER
-════════════════════════════════════ */
-.demo-banner {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 0.35rem 1rem;
-  background: rgba(26,133,133,0.06);
-  font-size: 0.7rem;
-  color: var(--teal-dk);
-  position: relative;
-  z-index: 2;
-}
-.demo-banner strong { font-weight: 700 }
-.demo-dismiss {
-  background: none;
-  border: 1px solid var(--teal-b);
-  border-radius: 6px;
-  padding: 0.22rem 0.6rem;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--teal);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  font-family: 'Lato', sans-serif;
-  transition: all 0.15s;
-}
-.demo-dismiss:hover { background: var(--teal); color: var(--white) }
+
 
    On wide screens: side-by-side split.
    On narrow screens: tab-strip toggles
@@ -1392,12 +1361,6 @@ html, body {
     <div class="qr-url" id="qr-url"></div>
   </div>
 
-  <!-- Demo mode banner -->
-  <div class="demo-banner" id="demo-banner" style="display:none">
-    <span>👀 <strong>Demo Mode</strong> — sample board loaded. Click any card to try it out.</span>
-    <button class="demo-dismiss" onclick="dismissDemo()">Got it</button>
-  </div>
-
   <!-- Title -->
   <div class="board-header">
     <div class="board-title-sub">Christine's</div>
@@ -1609,7 +1572,6 @@ let boardReady = false;
 let pollTimer = null;
 let currentMode = 'ai';
 let manualCatCount = 0;
-let isDemo = false;
 let qrBuilt = false;
 
 /* ═══════════════════════════════════════
@@ -1648,7 +1610,6 @@ function render(page) {
     renderScores();
     genQR();
     startPoll();
-    document.getElementById('demo-banner').style.display = isDemo ? 'flex' : 'none';
   }
 }
 
@@ -1725,48 +1686,22 @@ function applyManual() {
     cats.push({ name, questions: VALS.map(() => ({ q: '', a: '' })) });
   });
   if (!cats.length) { toast('Add at least one category first'); return; }
-  isDemo = false;
   applyBoard(cats);
   switchSetupTab('config');
   toast('✦ Board created! Fill in questions on the right.');
 }
 
 /* ═══════════════════════════════════════
-   DEMO
-═══════════════════════════════════════ */
-function loadDemo() {
-  isDemo = true;
-  G.categories = DEMO_BOARD.map(cat => ({
-    name: cat.name,
-    questions: VALS.map((_, ri) => cat.questions[ri] || { q: '', a: '' })
-  }));
-  G.players = [
-    { name: 'Team Bride', score: 400 },
-    { name: 'Maid of Honor', score: 200 },
-    { name: 'Besties', score: 0 },
-  ];
-  G.used = { '0-0': true, '2-1': true, '4-0': true };
-  boardReady = true;
-  broadcast();
-  renderConfig();
-  document.getElementById('btn-open-board').disabled = false;
-}
-
-function dismissDemo() {
-  document.getElementById('demo-banner').style.display = 'none';
-}
-
-/* ═══════════════════════════════════════
    CONFIG BOARD (right pane)
 ═══════════════════════════════════════ */
 function applyBoard(categories) {
-  isDemo = false;
   G.categories = categories.map(cat => ({
     name: cat.name,
     questions: VALS.map((_, ri) => cat.questions?.[ri] || { q: '', a: '' })
   }));
   G.used = {};
   boardReady = true;
+  broadcast();
   renderConfig();
   document.getElementById('btn-open-board').disabled = false;
 }
@@ -1785,7 +1720,7 @@ function renderConfig() {
       <div class="cat-head" onclick="toggleCat(${ci})">
         <span class="cat-num">CAT ${ci + 1}</span>
         <input class="cat-name-inp" value="${x(cat.name)}" placeholder="Category name"
-          oninput="G.categories[${ci}].name=this.value" onclick="event.stopPropagation()"/>
+          oninput="G.categories[${ci}].name=this.value; broadcast()" onclick="event.stopPropagation()"/>
         <span class="cat-toggle">▾</span>
       </div>
       <div class="cat-qs">
@@ -1799,9 +1734,9 @@ function renderConfig() {
           return `<div class="q-row">
             <div class="q-val">$${v}</div>
             <textarea class="q-field" rows="2" placeholder="Question…"
-              oninput="G.categories[${ci}].questions[${ri}].q=this.value">${x(q.q)}</textarea>
+              oninput="G.categories[${ci}].questions[${ri}].q=this.value; broadcast()">${x(q.q)}</textarea>
             <textarea class="q-field ans" rows="2" placeholder="Answer…"
-              oninput="G.categories[${ci}].questions[${ri}].a=this.value">${x(q.a)}</textarea>
+              oninput="G.categories[${ci}].questions[${ri}].a=this.value; broadcast()">${x(q.a)}</textarea>
           </div>`;
         }).join('')}
       </div>`;
@@ -2177,15 +2112,36 @@ function startPoll() {
    BOOT — runs after all functions defined
 ═══════════════════════════════════════ */
 (function boot() {
-  // Load demo so board is immediately previewable
-  loadDemo();
+  // Load saved state or initialize with default board data
+  const saved = localStorage.getItem('cj_state');
+  let loaded = false;
+  if (saved) {
+    try {
+      G = JSON.parse(saved);
+      loaded = true;
+    } catch (e) {
+      localStorage.removeItem('cj_state');
+    }
+  }
+  if (!loaded) {
+    G.categories = DEMO_BOARD.map(cat => ({
+      name: cat.name,
+      questions: VALS.map((_, ri) => cat.questions[ri] || { q: '', a: '' })
+    }));
+    G.players = [
+      { name: 'Team Bride', score: 0 },
+      { name: 'Maid of Honor', score: 0 },
+      { name: 'Besties', score: 0 },
+    ];
+    G.used = {};
+    broadcast();
+  }
+  boardReady = true;
+  renderConfig();
+  document.getElementById('btn-open-board').disabled = false;
 
   // Route to correct page
   const hash = window.location.hash.replace('#', '') || 'setup';
-  if (hash === 'player') {
-    const saved = localStorage.getItem('cj_state');
-    if (saved) G = JSON.parse(saved);
-  }
   render(hash);
 })();
 
