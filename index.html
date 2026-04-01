@@ -72,11 +72,6 @@ html, body {
   box-shadow: 0 2px 8px rgba(13,61,61,0.08);
   gap: 1rem;
   z-index: 10;
-  position: relative;
-}
-/* Board page nav is slimmer for projector mode */
-#page-board .nav {
-  height: 42px;
 }
 .logo {
   font-family: 'Bebas Neue', sans-serif;
@@ -95,10 +90,10 @@ html, body {
 .logo em {
   font-family: 'Playfair Display', serif;
   font-style: italic;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 700;
   color: var(--teal-lt);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   line-height: 1;
   display: block;
 }
@@ -427,136 +422,102 @@ html, body {
 
 /* ════════════════════════════════════
    PAGE — BOARD  (#board)
-   nav / scorebar / board-grid
-   Each section is fixed height except
-   board-grid which takes all remaining
+   Full-screen decorated game board
+   designed for landscape projector
 ════════════════════════════════════ */
-#page-board { background: var(--cream); position: relative; overflow: hidden }
-
-/* ── disco ball decoration (top-left, like the invitation) ── */
-.disco-deco {
-  position: absolute;
-  top: -18px;
-  left: -18px;
-  width: 200px;
-  height: 200px;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.18;
-}
-.disco-deco svg {
-  width: 100%;
-  height: 100%;
-}
-
-/* ── disco ball top-right (smaller) ── */
-.disco-deco-right {
-  position: absolute;
-  top: -10px;
-  right: 30px;
-  width: 110px;
-  height: 110px;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.12;
-}
-.disco-deco-right svg {
-  width: 100%;
-  height: 100%;
-}
-
-/* ── floating sparkles layer ── */
-.sparkle-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
+#page-board {
+  background: var(--white);
+  position: relative;
   overflow: hidden;
 }
-.sparkle {
-  position: absolute;
-  color: var(--teal);
-  font-size: 0.9rem;
-  opacity: 0;
-  animation: sparkle-float 4s ease-in-out infinite;
-}
-.sparkle:nth-child(1)  { top: 8%; left: 3%;  animation-delay: 0s;   font-size: 1.1rem }
-.sparkle:nth-child(2)  { top: 15%; right: 5%; animation-delay: 0.8s; font-size: 0.7rem }
-.sparkle:nth-child(3)  { bottom: 12%; left: 6%; animation-delay: 1.6s }
-.sparkle:nth-child(4)  { bottom: 8%; right: 3%; animation-delay: 2.4s; font-size: 1.2rem }
-.sparkle:nth-child(5)  { top: 45%; left: 1.5%; animation-delay: 0.4s; font-size: 0.65rem }
-.sparkle:nth-child(6)  { top: 60%; right: 1.5%; animation-delay: 1.2s; font-size: 0.8rem }
-.sparkle:nth-child(7)  { top: 30%; right: 2%; animation-delay: 2s; font-size: 0.6rem }
-.sparkle:nth-child(8)  { bottom: 25%; left: 2%; animation-delay: 3s; font-size: 0.75rem }
-.sparkle:nth-child(9)  { top: 75%; left: 4%; animation-delay: 1.8s; font-size: 0.55rem }
-.sparkle:nth-child(10) { top: 20%; left: 50%; animation-delay: 2.8s; font-size: 0.5rem }
-@keyframes sparkle-float {
-  0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg) }
-  30%      { opacity: 0.55 }
-  50%      { opacity: 0.8; transform: scale(1.1) rotate(180deg) }
-  70%      { opacity: 0.45 }
-}
 
-/* ── light beams from disco ball ── */
-.light-beams {
+/* Hide the default nav on board page — replaced by floating controls */
+#page-board > .nav { display: none }
+
+/* ── Decorative wavy border frame ── */
+.board-frame {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+.board-frame svg {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.04;
-  background:
-    conic-gradient(from 30deg at 10% 0%,
-      transparent 0deg,
-      var(--teal) 2deg,
-      transparent 4deg,
-      transparent 25deg,
-      var(--teal) 27deg,
-      transparent 29deg,
-      transparent 55deg,
-      var(--teal) 57deg,
-      transparent 59deg,
-      transparent 90deg,
-      var(--teal) 92deg,
-      transparent 94deg,
-      transparent 130deg,
-      var(--teal) 132deg,
-      transparent 134deg,
-      transparent 170deg,
-      var(--teal) 172deg,
-      transparent 174deg,
-      transparent 360deg);
-  animation: beam-rotate 25s linear infinite;
 }
-@keyframes beam-rotate { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
 
+/* ── Floating board controls (top-right) ── */
+.board-controls {
+  position: absolute;
+  top: 10px;
+  right: 24px;
+  z-index: 20;
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+.board-controls .btn {
+  font-size: 0.68rem;
+  padding: 0.3rem 0.65rem;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid var(--teal-b);
+  border-radius: 20px;
+}
+.board-controls .btn:hover {
+  background: var(--teal);
+  color: var(--white);
+  border-color: var(--teal);
+}
+
+/* ── Board title header ── */
+.board-header {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 0.7rem 1rem 0.15rem;
+  position: relative;
+  z-index: 2;
+}
+.board-title-sub {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(0.7rem, 1.4vw, 0.95rem);
+  color: var(--teal-lt);
+  letter-spacing: 0.04em;
+}
+.board-title-main {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  letter-spacing: 0.12em;
+  color: var(--teal);
+  line-height: 1.1;
+}
+
+/* ── Score bar — compact strip below title ── */
 .score-bar {
-  height: var(--score-h);
   flex-shrink: 0;
   display: flex;
-  gap: 0.42rem;
-  padding: 0 1rem;
+  gap: 0.4rem;
+  padding: 0.15rem 3rem;
   align-items: center;
+  justify-content: center;
   overflow-x: auto;
-  background: var(--white);
-  border-bottom: 1.5px solid var(--teal-b);
   scrollbar-width: none;
   position: relative;
   z-index: 2;
 }
-#page-board .score-bar {
-  height: 48px;
-}
 .score-bar::-webkit-scrollbar { display: none }
 
 .score-card {
-  background: var(--cream);
+  background: rgba(26,133,133,0.06);
   border: 1.5px solid var(--teal-b);
-  border-radius: 9px;
-  padding: 0.32rem 0.78rem;
-  min-width: 82px;
+  border-radius: 20px;
+  padding: 0.18rem 0.7rem;
+  min-width: 72px;
   text-align: center;
   flex-shrink: 0;
   transition: all 0.25s;
@@ -570,7 +531,7 @@ html, body {
 .score-card.buzzed .s-name { color: rgba(255,255,255,0.7) }
 .score-card.buzzed .s-val  { color: var(--white) }
 .s-name {
-  font-size: 0.59rem;
+  font-size: 0.52rem;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -581,7 +542,7 @@ html, body {
 }
 .s-val {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.28rem;
+  font-size: 1rem;
   letter-spacing: 0.04em;
   color: var(--teal);
   line-height: 1.1;
@@ -590,10 +551,10 @@ html, body {
 .add-player-btn {
   background: transparent;
   border: 1.5px dashed var(--teal-b);
-  border-radius: 9px;
-  width: 40px; height: 40px;
+  border-radius: 50%;
+  width: 30px; height: 30px;
   color: var(--teal-b);
-  font-size: 1.2rem;
+  font-size: 1rem;
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.16s;
@@ -603,11 +564,11 @@ html, body {
 }
 .add-player-btn:hover { border-color: var(--teal); color: var(--teal) }
 
-/* board grid fills all remaining space */
+/* ── Board grid fills all remaining space ── */
 .board-area {
   flex: 1;
   overflow: hidden;
-  padding: 0.4rem 0.5rem 0.3rem;
+  padding: 0.2rem 3rem 1.5rem;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -616,49 +577,33 @@ html, body {
 .board-grid {
   flex: 1;
   display: grid;
-  gap: 4px;
+  gap: 6px;
   overflow: hidden;
 }
 
+/* ── Category headers — script font like the screenshots ── */
 .cat-cell {
-  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dk) 100%);
-  border-radius: 8px;
+  background: transparent;
+  border-radius: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 0.3rem 0.4rem;
+  padding: 0.15rem 0.3rem 0.3rem;
   font-family: 'Playfair Display', serif;
-  font-size: clamp(0.56rem, 1.2vw, 0.88rem);
+  font-style: italic;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--white);
+  font-size: clamp(0.62rem, 1.35vw, 1rem);
+  letter-spacing: 0.02em;
+  color: var(--teal-dk);
   text-align: center;
-  line-height: 1.2;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  text-transform: uppercase;
-  position: relative;
-  overflow: hidden;
+  line-height: 1.15;
 }
-.cat-cell::before {
-  content: '✦';
-  position: absolute;
-  top: 3px;
-  left: 6px;
-  font-size: 0.45rem;
-  opacity: 0.35;
-}
-.cat-cell::after {
-  content: '✦';
-  position: absolute;
-  bottom: 3px;
-  right: 6px;
-  font-size: 0.35rem;
-  opacity: 0.25;
-}
+
+/* ── Question cells — clean bordered cards ── */
 .q-cell {
-  background: linear-gradient(145deg, var(--white) 0%, #f7f4ef 100%);
+  background: var(--white);
   border: 1.5px solid var(--teal-b);
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -666,7 +611,6 @@ html, body {
   transition: all 0.18s ease;
   position: relative;
   overflow: hidden;
-  /* height comes from grid rows — no fixed px height */
 }
 .q-cell::after {
   content: '';
@@ -683,37 +627,30 @@ html, body {
 .q-cell:hover:not(.used)::after { transform: translateX(130%) }
 .q-cell:hover:not(.used) {
   border-color: var(--teal);
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 8px 24px rgba(13,61,61,0.15), 0 0 0 2px var(--teal-pale2), inset 0 0 12px rgba(26,133,133,0.06);
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px rgba(26,133,133,0.15);
   z-index: 2;
+  background: var(--teal-pale);
 }
 .q-cell.used {
-  background: var(--cream-mid);
+  background: var(--cream);
   border-color: var(--cream-dark);
   cursor: default;
 }
-.q-cell.used::before {
-  content: '✧';
-  position: absolute;
-  font-size: 0.7rem;
-  color: var(--teal-b);
-  opacity: 0.4;
-}
 .dollar {
   font-family: 'Playfair Display', serif;
-  font-weight: 900;
-  font-size: clamp(0.9rem, 2.4vw, 1.9rem);
-  letter-spacing: 0.03em;
+  font-weight: 700;
+  font-size: clamp(0.85rem, 2.2vw, 1.7rem);
+  letter-spacing: 0.02em;
   color: var(--teal);
   pointer-events: none;
-  text-shadow: 0 1px 2px rgba(26,133,133,0.12);
 }
-.q-cell.used .dollar { opacity: 0 }
+.q-cell.used .dollar { opacity: 0.15; color: var(--cream-dark) }
 
 /* QR dropdown — positioned inside #page-board */
 .qr-panel {
   position: absolute;
-  top: calc(var(--nav-h) + 4px);
+  top: 38px;
   right: 1rem;
   background: var(--white);
   border: 1.5px solid var(--teal-b);
@@ -916,8 +853,8 @@ html, body {
 .modal-bg {
   position: absolute;
   inset: 0;
-  background: rgba(13,61,61,0.46);
-  backdrop-filter: blur(4px);
+  background: rgba(13,61,61,0.35);
+  backdrop-filter: blur(6px);
   z-index: 600;
   display: none;
   align-items: center;
@@ -927,31 +864,40 @@ html, body {
 .modal-bg.on { display: flex }
 .modal {
   background: var(--white);
-  border: 2px solid var(--teal-b);
-  border-radius: 22px;
-  padding: 1.9rem 1.75rem;
-  max-width: 600px;
+  border: 2.5px solid var(--teal);
+  border-radius: 18px;
+  padding: 2.2rem 2rem;
+  max-width: 680px;
   width: 100%;
   text-align: center;
   position: relative;
-  box-shadow: 0 20px 60px rgba(13,61,61,0.18), 0 0 0 1px rgba(26,133,133,0.08);
+  box-shadow: 0 20px 60px rgba(13,61,61,0.18);
   animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  overflow: hidden;
-  background: linear-gradient(180deg, var(--white) 0%, #f9f6f1 100%);
+  overflow: visible;
 }
 @keyframes popIn { from { opacity:0; transform:scale(0.9) } to { opacity:1; transform:scale(1) } }
 
 .modal-bar {
   position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: var(--teal); border-radius: 22px 22px 0 0; display: none;
+  background: var(--teal); border-radius: 18px 18px 0 0; display: none;
 }
 .modal-bar.on { display: block }
+/* Decorative corner sparkles on modal */
 .modal::before, .modal::after {
   content: '✦'; position: absolute;
-  font-size: 0.8rem; color: var(--teal-b);
+  font-size: 1rem; color: var(--teal);
+  opacity: 0.35;
 }
-.modal::before { top: 0.8rem; left: 1rem }
-.modal::after  { bottom: 0.8rem; right: 1rem }
+.modal::before { top: 0.6rem; left: 0.8rem }
+.modal::after  { bottom: 0.6rem; right: 0.8rem }
+.modal-frame {
+  position: absolute;
+  inset: 4px;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+  pointer-events: none;
+  z-index: 0;
+}
 
 .m-buzz {
   background: var(--teal-pale);
@@ -966,9 +912,9 @@ html, body {
 .m-buzz-name { font-weight: 700; font-size: 0.88rem; color: var(--teal-dk) }
 .m-buzz-sub  { font-size: 0.7rem; color: var(--teal-lt); margin-top: 0.06rem }
 
-.m-cat { font-size: 0.6rem; font-weight:700; letter-spacing:0.17em; text-transform:uppercase; color:var(--teal-lt); margin-bottom:0.24rem }
-.m-val { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:0.08em; color:var(--teal); margin-bottom:0.9rem }
-.m-q   { font-family:'Playfair Display',serif; font-size:clamp(1rem,2.6vw,1.6rem); font-weight:700; line-height:1.35; color:var(--ink); margin-bottom:1.4rem }
+.m-cat { font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(0.9rem,1.8vw,1.2rem); font-weight:700; color:var(--teal); margin-bottom:0.24rem }
+.m-val { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:var(--teal-lt); margin-bottom:0.9rem }
+.m-q   { font-family:'Playfair Display',serif; font-size:clamp(1.1rem,2.8vw,1.8rem); font-weight:700; line-height:1.35; color:var(--ink); margin-bottom:1.4rem }
 
 .m-ans {
   background: var(--cream);
@@ -983,9 +929,9 @@ html, body {
 .ans-txt  { font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:700; font-style:italic; color:var(--teal-dk) }
 
 .modal-btns { display:flex; gap:0.44rem; flex-wrap:wrap; justify-content:center }
-.mbtn { padding:0.52rem 1.15rem; border-radius:8px; font-family:'Lato',sans-serif; font-weight:700; font-size:0.78rem; cursor:pointer; border:none; transition:all 0.15s; letter-spacing:0.03em }
-.mbtn.reveal { background:var(--teal); color:var(--white); box-shadow:0 3px 10px rgba(26,133,133,0.22) }
-.mbtn.reveal:hover { background:var(--teal-dk) }
+.mbtn { padding:0.55rem 1.4rem; border-radius:24px; font-family:'Lato',sans-serif; font-weight:700; font-size:0.8rem; cursor:pointer; border:none; transition:all 0.15s; letter-spacing:0.03em }
+.mbtn.reveal { background:var(--teal); color:var(--white); box-shadow:0 4px 14px rgba(26,133,133,0.28) }
+.mbtn.reveal:hover { background:var(--teal-dk); transform:translateY(-1px) }
 .mbtn.award { background:var(--teal-pale); border:1.5px solid var(--teal-b); color:var(--teal-dk) }
 .mbtn.award:hover { background:var(--teal-pale2) }
 .mbtn.wrong { background:rgba(200,50,50,0.07); border:1.5px solid rgba(200,50,50,0.14); color:#9f3030 }
@@ -1122,13 +1068,14 @@ html, body {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 0.75rem;
-  padding: 0.5rem 1rem;
-  background: rgba(26,133,133,0.08);
-  border-bottom: 1px solid var(--teal-b);
-  font-size: 0.74rem;
+  padding: 0.35rem 1rem;
+  background: rgba(26,133,133,0.06);
+  font-size: 0.7rem;
   color: var(--teal-dk);
+  position: relative;
+  z-index: 2;
 }
 .demo-banner strong { font-weight: 700 }
 .demo-dismiss {
@@ -1302,64 +1249,7 @@ html, body {
 ═══════════════════════════════════════ -->
 <div id="page-board" class="page">
 
-  <!-- Disco ball decorations -->
-  <div class="disco-deco">
-    <svg viewBox="0 0 200 200" fill="none">
-      <!-- hanging line -->
-      <line x1="100" y1="0" x2="100" y2="38" stroke="#1a8585" stroke-width="2"/>
-      <!-- main ball -->
-      <circle cx="100" cy="100" r="55" stroke="#1a8585" stroke-width="2" fill="none"/>
-      <!-- grid lines -->
-      <ellipse cx="100" cy="100" rx="55" ry="22" stroke="#1a8585" stroke-width="1.2" fill="none" opacity=".5"/>
-      <ellipse cx="100" cy="100" rx="55" ry="38" stroke="#1a8585" stroke-width="1" fill="none" opacity=".4"/>
-      <ellipse cx="100" cy="88" rx="42" ry="16" stroke="#1a8585" stroke-width="1" fill="none" opacity=".35"/>
-      <ellipse cx="100" cy="112" rx="42" ry="16" stroke="#1a8585" stroke-width="1" fill="none" opacity=".35"/>
-      <line x1="45" y1="100" x2="155" y2="100" stroke="#1a8585" stroke-width="1.2" opacity=".45"/>
-      <line x1="100" y1="45" x2="100" y2="155" stroke="#1a8585" stroke-width="1.2" opacity=".45"/>
-      <!-- sparkle diamonds -->
-      <path d="M165 65 L168 58 L171 65 L168 72Z" fill="#1a8585" opacity=".5"/>
-      <path d="M35 78 L38 71 L41 78 L38 85Z" fill="#1a8585" opacity=".4"/>
-      <path d="M158 130 L160 126 L162 130 L160 134Z" fill="#1a8585" opacity=".35"/>
-      <!-- small sparkle dots -->
-      <circle cx="170" cy="85" r="2" fill="#1a8585" opacity=".4"/>
-      <circle cx="30" cy="115" r="1.8" fill="#1a8585" opacity=".3"/>
-      <circle cx="160" cy="50" r="1.5" fill="#1a8585" opacity=".35"/>
-      <!-- four-point stars -->
-      <path d="M180 100 L183 96 L186 100 L183 104Z" fill="#1a8585" opacity=".3"/>
-      <path d="M22 90 L25 86 L28 90 L25 94Z" fill="#1a8585" opacity=".25"/>
-    </svg>
-  </div>
-
-  <div class="disco-deco-right">
-    <svg viewBox="0 0 120 120" fill="none">
-      <line x1="60" y1="0" x2="60" y2="24" stroke="#1a8585" stroke-width="1.5"/>
-      <circle cx="60" cy="62" r="34" stroke="#1a8585" stroke-width="1.5" fill="none"/>
-      <ellipse cx="60" cy="62" rx="34" ry="14" stroke="#1a8585" stroke-width="1" fill="none" opacity=".45"/>
-      <ellipse cx="60" cy="62" rx="34" ry="24" stroke="#1a8585" stroke-width="0.8" fill="none" opacity=".35"/>
-      <line x1="26" y1="62" x2="94" y2="62" stroke="#1a8585" stroke-width="1" opacity=".4"/>
-      <line x1="60" y1="28" x2="60" y2="96" stroke="#1a8585" stroke-width="1" opacity=".4"/>
-      <path d="M100 40 L102 36 L104 40 L102 44Z" fill="#1a8585" opacity=".4"/>
-      <circle cx="108" cy="55" r="1.5" fill="#1a8585" opacity=".35"/>
-    </svg>
-  </div>
-
-  <!-- Light beams -->
-  <div class="light-beams"></div>
-
-  <!-- Floating sparkles -->
-  <div class="sparkle-layer">
-    <span class="sparkle">✦</span>
-    <span class="sparkle">✧</span>
-    <span class="sparkle">✦</span>
-    <span class="sparkle">✧</span>
-    <span class="sparkle">✦</span>
-    <span class="sparkle">✧</span>
-    <span class="sparkle">✦</span>
-    <span class="sparkle">✧</span>
-    <span class="sparkle">✦</span>
-    <span class="sparkle">✧</span>
-  </div>
-
+  <!-- Hidden nav — kept for routing but not displayed -->
   <nav class="nav">
     <button class="logo" onclick="go('setup')">
       <svg width="20" height="20" viewBox="0 0 80 80" fill="none">
@@ -1378,7 +1268,89 @@ html, body {
     </div>
   </nav>
 
-  <!-- QR dropdown — inside #page-board so position:absolute works correctly -->
+  <!-- ═══ Decorative wavy border frame ═══ -->
+  <div class="board-frame">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="none" fill="none">
+      <!-- Wavy border — top -->
+      <path d="M30,22 Q80,8 130,22 Q180,36 230,22 Q280,8 330,22 Q380,36 430,22 Q480,8 530,22 Q580,36 630,22 Q680,8 730,22 Q780,36 830,22 Q880,8 930,22 Q980,36 1030,22 Q1080,8 1130,22 Q1180,36 1230,22 Q1280,8 1330,22 Q1380,36 1430,22 Q1480,8 1530,22 Q1560,30 1570,22" stroke="var(--teal)" stroke-width="2.5" fill="none"/>
+      <!-- Wavy border — bottom -->
+      <path d="M30,878 Q80,892 130,878 Q180,864 230,878 Q280,892 330,878 Q380,864 430,878 Q480,892 530,878 Q580,864 630,878 Q680,892 730,878 Q780,864 830,878 Q880,892 930,878 Q980,864 1030,878 Q1080,892 1130,878 Q1180,864 1230,878 Q1280,892 1330,878 Q1380,864 1430,878 Q1480,892 1530,878 Q1560,870 1570,878" stroke="var(--teal)" stroke-width="2.5" fill="none"/>
+      <!-- Wavy border — left -->
+      <path d="M22,30 Q8,80 22,130 Q36,180 22,230 Q8,280 22,330 Q36,380 22,430 Q8,480 22,530 Q36,580 22,630 Q8,680 22,730 Q36,780 22,830 Q14,860 22,870" stroke="var(--teal)" stroke-width="2.5" fill="none"/>
+      <!-- Wavy border — right -->
+      <path d="M1578,30 Q1592,80 1578,130 Q1564,180 1578,230 Q1592,280 1578,330 Q1564,380 1578,430 Q1592,480 1578,530 Q1564,580 1578,630 Q1592,680 1578,730 Q1564,780 1578,830 Q1586,860 1578,870" stroke="var(--teal)" stroke-width="2.5" fill="none"/>
+
+      <!-- ═══ Corner sparkle clusters (top-left) — matching invite's 4-point stars ═══ -->
+      <!-- Disco ball top-left -->
+      <line x1="95" y1="28" x2="95" y2="55" stroke="var(--teal)" stroke-width="1.5"/>
+      <circle cx="95" cy="90" r="30" stroke="var(--teal)" stroke-width="1.5" fill="none"/>
+      <ellipse cx="95" cy="90" rx="30" ry="12" stroke="var(--teal)" stroke-width="1" fill="none" opacity=".5"/>
+      <ellipse cx="95" cy="90" rx="30" ry="20" stroke="var(--teal)" stroke-width="0.8" fill="none" opacity=".4"/>
+      <line x1="65" y1="90" x2="125" y2="90" stroke="var(--teal)" stroke-width="0.8" opacity=".4"/>
+      <line x1="95" y1="60" x2="95" y2="120" stroke="var(--teal)" stroke-width="0.8" opacity=".4"/>
+      <!-- Sparkle diamonds near disco ball -->
+      <path d="M140 55 L143 48 L146 55 L143 62Z" fill="var(--teal)" opacity=".45"/>
+      <path d="M55 55 L57 50 L59 55 L57 60Z" fill="var(--teal)" opacity=".35"/>
+      <circle cx="145" cy="75" r="2" fill="var(--teal)" opacity=".3"/>
+
+      <!-- ═══ Corner sparkle clusters (top-right) — champagne glass ═══ -->
+      <!-- Champagne glass -->
+      <line x1="1505" y1="88" x2="1505" y2="118" stroke="var(--teal)" stroke-width="1.2"/>
+      <line x1="1490" y1="118" x2="1520" y2="118" stroke="var(--teal)" stroke-width="1.2"/>
+      <ellipse cx="1505" cy="72" rx="16" ry="20" stroke="var(--teal)" stroke-width="1.3" fill="none"/>
+      <!-- Sparkle near glass -->
+      <path d="M1530 50 L1533 43 L1536 50 L1533 57Z" fill="var(--teal)" opacity=".4"/>
+      <path d="M1475 45 L1477 40 L1479 45 L1477 50Z" fill="var(--teal)" opacity=".3"/>
+      <circle cx="1540" cy="68" r="1.8" fill="var(--teal)" opacity=".35"/>
+      <!-- Small hearts -->
+      <path d="M1548 82 C1548 78, 1553 76, 1553 80 C1553 76, 1558 78, 1558 82 C1558 86, 1553 90, 1553 90 C1553 90, 1548 86, 1548 82Z" fill="var(--teal)" opacity=".25"/>
+
+      <!-- ═══ Corner sparkle clusters (bottom-left) — champagne bottle ═══ -->
+      <!-- Bottle shape -->
+      <rect x="72" y="790" width="14" height="50" rx="3" stroke="var(--teal)" stroke-width="1.2" fill="none"/>
+      <rect x="75" y="782" width="8" height="12" rx="2" stroke="var(--teal)" stroke-width="1" fill="none"/>
+      <!-- Sparkles from bottle -->
+      <path d="M65 775 L67.5 769 L70 775 L67.5 781Z" fill="var(--teal)" opacity=".4"/>
+      <circle cx="90" cy="778" r="2" fill="var(--teal)" opacity=".35"/>
+      <circle cx="58" cy="785" r="1.5" fill="var(--teal)" opacity=".25"/>
+      <!-- Stars -->
+      <path d="M100 835 L102 830 L104 835 L102 840Z" fill="var(--teal)" opacity=".3"/>
+
+      <!-- ═══ Corner sparkle clusters (bottom-right) — wine glass & stars ═══ -->
+      <!-- Wine glass -->
+      <ellipse cx="1510" cy="800" rx="14" ry="18" stroke="var(--teal)" stroke-width="1.2" fill="none"/>
+      <line x1="1510" y1="818" x2="1510" y2="840" stroke="var(--teal)" stroke-width="1.2"/>
+      <line x1="1498" y1="840" x2="1522" y2="840" stroke="var(--teal)" stroke-width="1.2"/>
+      <!-- Stars near glass -->
+      <path d="M1540 810 L1543 803 L1546 810 L1543 817Z" fill="var(--teal)" opacity=".4"/>
+      <path d="M1480 825 L1482 820 L1484 825 L1482 830Z" fill="var(--teal)" opacity=".3"/>
+      <circle cx="1535" cy="835" r="2" fill="var(--teal)" opacity=".3"/>
+      <circle cx="1475" cy="808" r="1.5" fill="var(--teal)" opacity=".25"/>
+
+      <!-- ═══ Top-center disco ball (hanging) ═══ -->
+      <line x1="800" y1="22" x2="800" y2="42" stroke="var(--teal)" stroke-width="1.5"/>
+      <circle cx="800" cy="68" r="22" stroke="var(--teal)" stroke-width="1.5" fill="none"/>
+      <ellipse cx="800" cy="68" rx="22" ry="9" stroke="var(--teal)" stroke-width="0.8" fill="none" opacity=".5"/>
+      <ellipse cx="800" cy="68" rx="22" ry="15" stroke="var(--teal)" stroke-width="0.7" fill="none" opacity=".4"/>
+      <line x1="778" y1="68" x2="822" y2="68" stroke="var(--teal)" stroke-width="0.7" opacity=".4"/>
+      <line x1="800" y1="46" x2="800" y2="90" stroke="var(--teal)" stroke-width="0.7" opacity=".4"/>
+      <!-- Sparkles around center ball -->
+      <path d="M830 48 L832 44 L834 48 L832 52Z" fill="var(--teal)" opacity=".35"/>
+      <path d="M768 50 L770 46 L772 50 L770 54Z" fill="var(--teal)" opacity=".3"/>
+      <circle cx="840" cy="62" r="1.5" fill="var(--teal)" opacity=".3"/>
+      <circle cx="758" cy="65" r="1.5" fill="var(--teal)" opacity=".25"/>
+    </svg>
+  </div>
+
+  <!-- Floating controls -->
+  <div class="board-controls">
+    <button class="btn" onclick="go('setup')">← Edit</button>
+    <button class="btn" onclick="toggleQR()">📱 Players</button>
+    <button class="btn" onclick="addPlayer()">+ Player</button>
+    <button class="btn danger" onclick="resetGame()">Reset</button>
+  </div>
+
+  <!-- QR dropdown -->
   <div class="qr-panel" id="qr-panel">
     <div class="qr-label">Scan to Join</div>
     <div id="qrcode"></div>
@@ -1389,6 +1361,12 @@ html, body {
   <div class="demo-banner" id="demo-banner" style="display:none">
     <span>👀 <strong>Demo Mode</strong> — sample board loaded. Click any card to try it out.</span>
     <button class="demo-dismiss" onclick="dismissDemo()">Got it</button>
+  </div>
+
+  <!-- Title -->
+  <div class="board-header">
+    <div class="board-title-sub">Christine's</div>
+    <div class="board-title-main">BACHELORETTE JEOPARDY</div>
   </div>
 
   <!-- Scores -->
@@ -1436,6 +1414,11 @@ html, body {
 ═══════════════════════════════════════ -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal">
+    <!-- Decorative border inside modal -->
+    <svg class="modal-frame" viewBox="0 0 680 400" preserveAspectRatio="none" fill="none">
+      <path d="M15,12 Q40,4 65,12 Q90,20 115,12 Q140,4 165,12 Q190,20 215,12 Q240,4 265,12 Q290,20 315,12 Q340,4 365,12 Q390,20 415,12 Q440,4 465,12 Q490,20 515,12 Q540,4 565,12 Q590,20 615,12 Q640,4 665,12" stroke="var(--teal)" stroke-width="1.5" opacity=".25"/>
+      <path d="M15,388 Q40,396 65,388 Q90,380 115,388 Q140,396 165,388 Q190,380 215,388 Q240,396 265,388 Q290,380 315,388 Q340,396 365,388 Q390,380 415,388 Q440,396 465,388 Q490,380 515,388 Q540,396 565,388 Q590,380 615,388 Q640,396 665,388" stroke="var(--teal)" stroke-width="1.5" opacity=".25"/>
+    </svg>
     <div class="modal-bar" id="modal-bar"></div>
     <div class="m-buzz" id="m-buzz">
       <div class="m-buzz-name" id="m-buzz-name">🔔 Someone buzzed in!</div>
