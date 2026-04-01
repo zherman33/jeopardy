@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Christine's Bachelorette Jeopardy!</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Bebas+Neue&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ════════════════════════════════════
+   RESET & ROOT
+════════════════════════════════════ */
+:root {
+  --cream:       #ede8df;
+  --cream-mid:   #e3dcd2;
+  --cream-dark:  #d6cfc3;
+  --teal:        #1a8585;
+  --teal-dk:     #12605f;
+  --teal-lt:     #2aabab;
+  --teal-pale:   rgba(26,133,133,0.09);
+  --teal-pale2:  rgba(26,133,133,0.17);
+  --teal-b:      rgba(26,133,133,0.22);
+  --ink:         #0d3d3d;
+  --ink-soft:    rgba(13,61,61,0.52);
+  --ink-faint:   rgba(13,61,61,0.26);
+  --white:       #ffffff;
+  --nav-h:       52px;
+  --score-h:     58px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+html, body {
+  font-size: 16px;
+  font-family: 'Lato', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  /* Use dynamic viewport height so WebViews/iframes work correctly */
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ════════════════════════════════════
+   PAGE SYSTEM
+   Pages stack as siblings, only one
+   visible at a time via .active.
+   Use absolute fill within body rather
+   than fixed so iframe contexts work.
+════════════════════════════════════ */
+.page {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--cream);
+}
+.page.active { display: flex }
+
+/* ════════════════════════════════════
+   SHARED NAV  (52px tall)
+════════════════════════════════════ */
+.nav {
+  height: var(--nav-h);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.4rem;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--teal-b);
+  box-shadow: 0 2px 8px rgba(13,61,61,0.08);
+  gap: 1rem;
+  z-index: 10;
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.42rem;
+  letter-spacing: 0.08em;
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+}
+.logo em {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--teal-lt);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  display: block;
+}
+.nav-actions { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap }
+
+/* ════════════════════════════════════
+   BUTTONS
+════════════════════════════════════ */
+.btn {
+  background: var(--white);
+  border: 1.5px solid var(--teal-b);
+  color: var(--teal-dk);
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.77rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all 0.16s;
+  font-family: 'Lato', sans-serif;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--cream); border-color: var(--teal) }
+.btn.primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--white);
+  box-shadow: 0 3px 10px rgba(26,133,133,0.26);
+}
+.btn.primary:hover { background: var(--teal-dk); transform: translateY(-1px) }
+.btn.primary[disabled] { opacity: 0.35; pointer-events: none }
+.btn.danger { border-color: rgba(200,50,50,0.24); color: #9f3030 }
+.btn.danger:hover { background: #fff3f3 }
+
+/* ════════════════════════════════════
+   PAGE — SETUP  (#setup)
+   Layout: nav / [chat pane | config pane]
+   Both panes fill exactly the remaining height
+════════════════════════════════════ */
+#page-setup { background: var(--cream) }
+
+.setup-split {
+  /* fills everything below nav */
+  flex: 1;
+  display: flex;
+  min-height: 0; /* critical — allows children to shrink below content size */
+  overflow: hidden;
+}
+
+/* ── chat pane (left) ── */
+.chat-pane {
+  width: 360px;
+  min-width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1.5px solid var(--teal-b);
+  background: var(--white);
+}
+
+.chat-pane-head {
+  flex-shrink: 0;
+  padding: 0.85rem 1.1rem 0.65rem;
+  border-bottom: 1px solid var(--teal-b);
+}
+.pane-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.12rem;
+}
+.pane-sub { font-size: 0.76rem; color: var(--ink-soft); line-height: 1.4 }
+
+.chat-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.58rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--teal-b) transparent;
+}
+
+.msg {
+  max-width: 87%;
+  padding: 0.58rem 0.84rem;
+  border-radius: 14px;
+  font-size: 0.83rem;
+  line-height: 1.55;
+  animation: msgIn 0.2s ease;
+}
+@keyframes msgIn { from { opacity:0; transform:translateY(4px) } to { opacity:1; transform:translateY(0) } }
+.msg.ai {
+  background: var(--cream);
+  border: 1px solid var(--teal-b);
+  align-self: flex-start;
+  border-bottom-left-radius: 3px;
+}
+.msg.user {
+  background: var(--teal);
+  color: var(--white);
+  align-self: flex-end;
+  border-bottom-right-radius: 3px;
+}
+.msg.typing span {
+  display: inline-block;
+  width: 5px; height: 5px;
+  background: var(--teal-lt);
+  border-radius: 50%;
+  animation: dot 1.1s infinite;
+  margin: 0 2px;
+}
+.msg.typing span:nth-child(2) { animation-delay: .2s }
+.msg.typing span:nth-child(3) { animation-delay: .4s }
+@keyframes dot { 0%,60%,100% { transform:translateY(0) } 30% { transform:translateY(-5px) } }
+
+.chat-chips {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0.25rem 0.95rem 0.42rem;
+}
+.chip {
+  background: var(--teal-pale);
+  border: 1px solid var(--teal-b);
+  border-radius: 20px;
+  padding: 0.24rem 0.66rem;
+  font-size: 0.71rem;
+  font-weight: 700;
+  color: var(--teal-dk);
+  cursor: pointer;
+  transition: all 0.13s;
+  white-space: nowrap;
+}
+.chip:hover { background: var(--teal-pale2); border-color: var(--teal) }
+
+.chat-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--teal-b);
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  gap: 0.4rem;
+}
+.chat-inp {
+  flex: 1;
+  background: var(--cream);
+  border: 1.5px solid var(--teal-b);
+  border-radius: 9px;
+  padding: 0.55rem 0.8rem;
+  color: var(--ink);
+  font-family: 'Lato', sans-serif;
+  font-size: 0.83rem;
+  outline: none;
+  transition: border-color 0.16s;
+  resize: none;
+  line-height: 1.4;
+  min-height: 34px;
+  max-height: 84px;
+}
+.chat-inp:focus { border-color: var(--teal) }
+.chat-inp::placeholder { color: var(--ink-faint) }
+.send-btn {
+  width: 34px; height: 34px;
+  flex-shrink: 0;
+  align-self: flex-end;
+  background: var(--teal);
+  color: var(--white);
+  border: none;
+  border-radius: 9px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.16s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.send-btn:hover { background: var(--teal-dk) }
+.send-btn:disabled { opacity: 0.3; cursor: not-allowed }
+
+/* ── config pane (right) ── */
+.config-pane {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.3rem 1.15rem;
+  min-width: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--teal-b) transparent;
+}
+
+.config-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--ink-faint);
+  gap: 0.75rem;
+  padding: 2rem;
+}
+.disco-idle {
+  width: 70px;
+  opacity: 0.2;
+  animation: spin-slow 15s linear infinite;
+}
+@keyframes spin-slow { from { transform:rotate(0deg) } to { transform:rotate(360deg) } }
+.config-empty p { font-size: 0.82rem; line-height: 1.55; max-width: 220px }
+
+.config-lbl {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teal-lt);
+  margin-bottom: 0.85rem;
+}
+
+/* category cards */
+.cat-card {
+  background: var(--white);
+  border: 1.5px solid var(--teal-b);
+  border-radius: 12px;
+  margin-bottom: 0.78rem;
+  overflow: hidden;
+  transition: border-color 0.16s;
+  animation: cardIn 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes cardIn { from { opacity:0; transform:translateY(6px) scale(0.98) } to { opacity:1; transform:translateY(0) scale(1) } }
+.cat-card:focus-within { border-color: var(--teal) }
+
+.cat-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.58rem 0.85rem;
+  background: var(--teal-pale);
+  border-bottom: 1px solid var(--teal-b);
+  cursor: pointer;
+  user-select: none;
+}
+.cat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  color: var(--teal-lt);
+  flex-shrink: 0;
+}
+.cat-name-inp {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.07em;
+  color: var(--teal-dk);
+  min-width: 0;
+}
+.cat-name-inp::placeholder { color: var(--ink-faint) }
+.cat-toggle {
+  font-size: 0.68rem;
+  color: var(--teal-lt);
+  flex-shrink: 0;
+  transition: transform 0.17s;
+}
+.cat-card.collapsed .cat-toggle { transform: rotate(-90deg) }
+.cat-card.collapsed .cat-qs    { display: none }
+
+.cat-qs { padding: 0.35rem 0.65rem 0.6rem }
+.q-col-lbls {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr;
+  gap: 0.36rem;
+  padding: 0.3rem 0 0.16rem;
+}
+.q-col-lbl {
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: center;
+}
+.q-col-lbl:first-child { text-align: right }
+.q-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr;
+  gap: 0.36rem;
+  align-items: start;
+  padding: 0.26rem 0;
+  border-bottom: 1px dashed rgba(26,133,133,0.1);
+}
+.q-row:last-child { border-bottom: none }
+.q-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--teal-lt);
+  padding-top: 0.38rem;
+  text-align: right;
+}
+.q-field {
+  background: var(--cream);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.34rem 0.5rem;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.75rem;
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+  resize: none;
+  line-height: 1.4;
+  min-height: 30px;
+  transition: border-color 0.13s, background 0.13s;
+}
+.q-field:hover  { background: var(--cream-mid) }
+.q-field:focus  { border-color: var(--teal); background: var(--white) }
+.q-field::placeholder { color: var(--ink-faint) }
+.q-field.ans    { color: var(--teal-dk); font-style: italic }
+
+/* ════════════════════════════════════
+   PAGE — BOARD  (#board)
+   nav / scorebar / board-grid
+   Each section is fixed height except
+   board-grid which takes all remaining
+════════════════════════════════════ */
+#page-board { background: var(--cream); position: relative }
+
+.score-bar {
+  height: var(--score-h);
+  flex-shrink: 0;
+  display: flex;
+  gap: 0.42rem;
+  padding: 0 1rem;
+  align-items: center;
+  overflow-x: auto;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--teal-b);
+  scrollbar-width: none;
+}
+.score-bar::-webkit-scrollbar { display: none }
+
+.score-card {
+  background: var(--cream);
+  border: 1.5px solid var(--teal-b);
+  border-radius: 9px;
+  padding: 0.32rem 0.78rem;
+  min-width: 82px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: all 0.25s;
+}
+.score-card.buzzed {
+  background: var(--teal);
+  border-color: var(--teal-dk);
+  transform: scale(1.07);
+  box-shadow: 0 4px 14px rgba(26,133,133,0.28);
+}
+.score-card.buzzed .s-name { color: rgba(255,255,255,0.7) }
+.score-card.buzzed .s-val  { color: var(--white) }
+.s-name {
+  font-size: 0.59rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--teal-dk);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.s-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.28rem;
+  letter-spacing: 0.04em;
+  color: var(--teal);
+  line-height: 1.1;
+}
+.s-val.neg { color: #b02828 }
+.add-player-btn {
+  background: transparent;
+  border: 1.5px dashed var(--teal-b);
+  border-radius: 9px;
+  width: 40px; height: 40px;
+  color: var(--teal-b);
+  font-size: 1.2rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.16s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-player-btn:hover { border-color: var(--teal); color: var(--teal) }
+
+/* board grid fills all remaining space */
+.board-area {
+  flex: 1;
+  overflow: hidden;
+  padding: 0.6rem 0.8rem 0.45rem;
+  display: flex;
+  flex-direction: column;
+}
+.board-grid {
+  flex: 1;
+  display: grid;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.cat-cell {
+  background: var(--teal);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.24rem 0.3rem;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(0.54rem, 1.15vw, 0.84rem);
+  letter-spacing: 0.07em;
+  color: var(--white);
+  text-align: center;
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.14);
+}
+.q-cell {
+  background: var(--white);
+  border: 1.5px solid var(--teal-b);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  /* height comes from grid rows — no fixed px height */
+}
+.q-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg,
+    rgba(255,255,255,0) 30%,
+    rgba(255,255,255,0.55) 50%,
+    rgba(255,255,255,0) 70%);
+  transform: translateX(-130%);
+  transition: transform 0.38s ease;
+  pointer-events: none;
+}
+.q-cell:hover:not(.used)::after { transform: translateX(130%) }
+.q-cell:hover:not(.used) {
+  border-color: var(--teal);
+  transform: translateY(-2px) scale(1.022);
+  box-shadow: 0 6px 20px rgba(13,61,61,0.13), 0 0 0 2px var(--teal-pale2);
+  z-index: 2;
+}
+.q-cell.used {
+  background: var(--cream-mid);
+  border-color: var(--cream-dark);
+  cursor: default;
+}
+.dollar {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(0.82rem, 2.2vw, 1.75rem);
+  letter-spacing: 0.05em;
+  color: var(--teal);
+  pointer-events: none;
+}
+.q-cell.used .dollar { opacity: 0 }
+
+/* QR dropdown — positioned inside #page-board */
+.qr-panel {
+  position: absolute;
+  top: calc(var(--nav-h) + 4px);
+  right: 1rem;
+  background: var(--white);
+  border: 1.5px solid var(--teal-b);
+  border-radius: 14px;
+  padding: 0.9rem;
+  z-index: 100;
+  text-align: center;
+  box-shadow: 0 16px 48px rgba(13,61,61,0.16);
+  display: none;
+  min-width: 168px;
+}
+.qr-panel.on { display: block; animation: qrIn 0.18s ease }
+@keyframes qrIn { from { opacity:0; transform:translateY(-6px) } to { opacity:1; transform:translateY(0) } }
+.qr-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.65rem;
+}
+.qr-url { font-size: 0.56rem; color: var(--ink-faint); margin-top: 0.42rem; word-break: break-all }
+
+/* ════════════════════════════════════
+   PAGE — PLAYER  (#player)
+   Full-page centred buzzer
+════════════════════════════════════ */
+#page-player {
+  background: var(--cream);
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  overflow-y: auto;
+}
+#page-player::before {
+  content: '✦  ✦  ✦';
+  position: absolute;
+  top: 1.5rem; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  letter-spacing: 1.4rem;
+  color: var(--teal-b);
+  pointer-events: none;
+}
+.player-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.95rem;
+  letter-spacing: 0.1em;
+  color: var(--teal);
+  text-align: center;
+  margin-bottom: 0.14rem;
+}
+.player-sub {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.88rem;
+  color: var(--teal-lt);
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+#player-join {
+  width: 100%;
+  max-width: 290px;
+  background: var(--white);
+  border: 1.5px solid var(--teal-b);
+  border-radius: 20px;
+  padding: 1.55rem 1.3rem;
+  text-align: center;
+  box-shadow: 0 6px 24px rgba(13,61,61,0.12);
+}
+.join-hint {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-bottom: 0.92rem;
+  line-height: 1.45;
+}
+.join-field {
+  width: 100%;
+  background: var(--cream);
+  border: 1.5px solid var(--teal-b);
+  border-radius: 10px;
+  padding: 0.78rem 1rem;
+  color: var(--ink);
+  font-family: 'Lato', sans-serif;
+  font-size: 1rem;
+  text-align: center;
+  outline: none;
+  letter-spacing: 0.05em;
+  transition: border-color 0.16s;
+  margin-bottom: 0.68rem;
+}
+.join-field:focus { border-color: var(--teal) }
+.join-field::placeholder { color: var(--ink-faint) }
+.join-btn {
+  width: 100%;
+  background: var(--teal);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  padding: 0.85rem;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(26,133,133,0.28);
+  transition: all 0.16s;
+}
+.join-btn:hover { background: var(--teal-dk); transform: translateY(-1px) }
+
+#player-buzz {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.05rem;
+  width: 100%;
+  max-width: 290px;
+}
+.buzz-row {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+.buzz-badge {
+  background: var(--teal-pale);
+  border: 1px solid var(--teal-b);
+  border-radius: 7px;
+  padding: 0.3rem 0.76rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--teal-dk);
+}
+.buzz-pts {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.75rem;
+  letter-spacing: 0.05em;
+  color: var(--teal);
+}
+.buzz-rings {
+  position: relative;
+  width: 220px; height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid var(--teal-b);
+  animation: ringPulse 2.6s ease-in-out infinite;
+}
+.ring:nth-child(1) { width: 192px; height: 192px; animation-delay: 0s }
+.ring:nth-child(2) { width: 216px; height: 216px; animation-delay: 0.62s; border-width:1px; border-color:rgba(26,133,133,0.09) }
+@keyframes ringPulse {
+  0%,100% { transform:scale(1); opacity:0.45 }
+  50%      { transform:scale(1.04); opacity:1 }
+}
+.buzz-btn {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 3px solid var(--teal);
+  color: var(--teal);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.85rem;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.13s;
+  box-shadow: 0 6px 24px rgba(13,61,61,0.12), inset 0 2px 4px rgba(255,255,255,0.8);
+  position: relative; z-index: 2;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.buzz-btn:active:not(:disabled) {
+  transform: scale(0.9);
+  box-shadow: 0 2px 10px rgba(13,61,61,0.1), inset 0 4px 10px rgba(0,0,0,0.05);
+}
+.buzz-btn:disabled {
+  background: var(--cream-mid); border-color: var(--cream-dark);
+  color: var(--ink-faint); cursor: not-allowed;
+}
+.buzz-btn.success { background: var(--teal); border-color: var(--teal-dk); color: var(--white); box-shadow: 0 0 30px rgba(26,133,133,0.38) }
+.buzz-btn.late    { background: #fff3f3; border-color: #df8080; color: #c03030 }
+
+.buzz-status {
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  text-align: center;
+  min-height: 1.1rem;
+  transition: color 0.16s;
+}
+.buzz-status.success { color: var(--teal) }
+.buzz-status.late    { color: #c03030 }
+
+/* ════════════════════════════════════
+   MODAL
+════════════════════════════════════ */
+.modal-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(13,61,61,0.46);
+  backdrop-filter: blur(4px);
+  z-index: 600;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.modal-bg.on { display: flex }
+.modal {
+  background: var(--white);
+  border: 2px solid var(--teal-b);
+  border-radius: 22px;
+  padding: 1.9rem 1.75rem;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(13,61,61,0.18);
+  animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  overflow: hidden;
+}
+@keyframes popIn { from { opacity:0; transform:scale(0.9) } to { opacity:1; transform:scale(1) } }
+
+.modal-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: var(--teal); border-radius: 22px 22px 0 0; display: none;
+}
+.modal-bar.on { display: block }
+.modal::before, .modal::after {
+  content: '✦'; position: absolute;
+  font-size: 0.8rem; color: var(--teal-b);
+}
+.modal::before { top: 0.8rem; left: 1rem }
+.modal::after  { bottom: 0.8rem; right: 1rem }
+
+.m-buzz {
+  background: var(--teal-pale);
+  border: 1.5px solid var(--teal-b);
+  border-radius: 9px;
+  padding: 0.55rem 0.88rem;
+  margin-bottom: 0.95rem;
+  display: none;
+  animation: msgIn 0.2s ease;
+}
+.m-buzz.on   { display: block }
+.m-buzz-name { font-weight: 700; font-size: 0.88rem; color: var(--teal-dk) }
+.m-buzz-sub  { font-size: 0.7rem; color: var(--teal-lt); margin-top: 0.06rem }
+
+.m-cat { font-size: 0.6rem; font-weight:700; letter-spacing:0.17em; text-transform:uppercase; color:var(--teal-lt); margin-bottom:0.24rem }
+.m-val { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:0.08em; color:var(--teal); margin-bottom:0.9rem }
+.m-q   { font-family:'Playfair Display',serif; font-size:clamp(1rem,2.6vw,1.6rem); font-weight:700; line-height:1.35; color:var(--ink); margin-bottom:1.4rem }
+
+.m-ans {
+  background: var(--cream);
+  border: 1px solid var(--teal-b);
+  border-radius: 9px;
+  padding: 0.68rem 1rem;
+  margin-bottom: 1.2rem;
+  display: none;
+}
+.m-ans.on { display: block; animation: msgIn 0.2s ease }
+.ans-lbl  { font-size: 0.56rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--teal-lt); margin-bottom:0.18rem }
+.ans-txt  { font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:700; font-style:italic; color:var(--teal-dk) }
+
+.modal-btns { display:flex; gap:0.44rem; flex-wrap:wrap; justify-content:center }
+.mbtn { padding:0.52rem 1.15rem; border-radius:8px; font-family:'Lato',sans-serif; font-weight:700; font-size:0.78rem; cursor:pointer; border:none; transition:all 0.15s; letter-spacing:0.03em }
+.mbtn.reveal { background:var(--teal); color:var(--white); box-shadow:0 3px 10px rgba(26,133,133,0.22) }
+.mbtn.reveal:hover { background:var(--teal-dk) }
+.mbtn.award { background:var(--teal-pale); border:1.5px solid var(--teal-b); color:var(--teal-dk) }
+.mbtn.award:hover { background:var(--teal-pale2) }
+.mbtn.wrong { background:rgba(200,50,50,0.07); border:1.5px solid rgba(200,50,50,0.14); color:#9f3030 }
+.mbtn.wrong:hover { background:rgba(200,50,50,0.12) }
+.mbtn.skip  { background:var(--cream); border:1.5px solid var(--teal-b); color:var(--ink-soft) }
+.mbtn.skip:hover { background:var(--cream-mid) }
+
+/* ════════════════════════════════════
+   TOAST
+════════════════════════════════════ */
+.toast {
+  position: absolute;
+  top: 1rem; left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  background: var(--teal-dk);
+  color: var(--white);
+  border-radius: 8px;
+  padding: 0.52rem 1.2rem;
+  font-weight: 700;
+  font-size: 0.79rem;
+  z-index: 999;
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  box-shadow: 0 6px 18px rgba(13,61,61,0.22);
+  pointer-events: none;
+}
+.toast.on { transform: translateX(-50%) translateY(0) }
+
+/* ════════════════════════════════════
+   MODE PICKER (AI vs Manual)
+════════════════════════════════════ */
+.mode-head {
+  flex-shrink: 0;
+  display: flex;
+  border-bottom: 1.5px solid var(--teal-b);
+  background: var(--white);
+}
+.mode-btn {
+  flex: 1;
+  padding: 0.68rem 0.5rem;
+  border: none;
+  background: transparent;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.mode-btn.active {
+  color: var(--teal);
+  border-bottom-color: var(--teal);
+  background: var(--teal-pale);
+}
+
+/* ════════════════════════════════════
+   MANUAL FORM
+════════════════════════════════════ */
+.manual-hint {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.8rem;
+  background: var(--teal-pale);
+  border: 1px solid var(--teal-b);
+  border-radius: 8px;
+}
+.manual-cat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.manual-cat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  color: var(--teal-lt);
+  flex-shrink: 0;
+  width: 42px;
+  text-align: right;
+}
+.manual-cat-inp {
+  flex: 1;
+  background: var(--cream);
+  border: 1.5px solid var(--teal-b);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.84rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.manual-cat-inp:focus { border-color: var(--teal) }
+.manual-cat-inp::placeholder { color: var(--ink-faint) }
+.manual-cat-del {
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.manual-cat-del:hover { color: #b03030 }
+.manual-add-btn {
+  width: 100%;
+  background: transparent;
+  border: 1.5px dashed var(--teal-b);
+  border-radius: 8px;
+  padding: 0.55rem;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--teal-lt);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 0.25rem;
+}
+.manual-add-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-pale) }
+
+/* ════════════════════════════════════
+   DEMO BANNER
+════════════════════════════════════ */
+.demo-banner {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: rgba(26,133,133,0.08);
+  border-bottom: 1px solid var(--teal-b);
+  font-size: 0.74rem;
+  color: var(--teal-dk);
+}
+.demo-banner strong { font-weight: 700 }
+.demo-dismiss {
+  background: none;
+  border: 1px solid var(--teal-b);
+  border-radius: 6px;
+  padding: 0.22rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--teal);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: 'Lato', sans-serif;
+  transition: all 0.15s;
+}
+.demo-dismiss:hover { background: var(--teal); color: var(--white) }
+
+   On wide screens: side-by-side split.
+   On narrow screens: tab-strip toggles
+   between chat and config — only one
+   panel visible at a time.
+════════════════════════════════════ */
+.setup-tabs {
+  display: none; /* hidden on wide screens */
+  flex-shrink: 0;
+  height: 40px;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--teal-b);
+}
+.setup-tab {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.setup-tab.active {
+  color: var(--teal);
+  border-bottom-color: var(--teal);
+}
+
+@media (max-width: 700px) {
+  /* show tab strip */
+  .setup-tabs { display: flex }
+
+  .setup-split {
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* both panes fill the full remaining area */
+  .chat-pane,
+  .config-pane {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border-right: none;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+
+  /* hidden panel slides slightly and fades */
+  .chat-pane.tab-hidden,
+  .config-pane.tab-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(8px);
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     PAGE: SETUP  (#setup)
+═══════════════════════════════════════ -->
+<div id="page-setup" class="page">
+
+  <nav class="nav">
+    <button class="logo" onclick="go('setup')">
+      <svg width="20" height="20" viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="44" r="26" stroke="#1a8585" stroke-width="2" fill="none"/>
+        <ellipse cx="40" cy="44" rx="26" ry="10" stroke="#1a8585" stroke-width="1.2" fill="none" opacity=".5"/>
+        <line x1="14" y1="44" x2="66" y2="44" stroke="#1a8585" stroke-width="1.2" opacity=".4"/>
+        <line x1="40" y1="18" x2="40" y2="70" stroke="#1a8585" stroke-width="1.2" opacity=".4"/>
+      </svg>
+      <div><em>Christine's</em>JEOPARDY!</div>
+    </button>
+    <div class="nav-actions">
+      <button class="btn primary" id="btn-open-board" disabled onclick="go('board')">
+        ✦ Open Game Board
+      </button>
+    </div>
+  </nav>
+
+  <!-- Tab strip — only visible on narrow screens -->
+  <div class="setup-tabs" id="setup-tabs">
+    <button class="setup-tab active" id="tab-chat" onclick="switchSetupTab('chat')">💬 Chat</button>
+    <button class="setup-tab" id="tab-config" onclick="switchSetupTab('config')">🎯 Board Config</button>
+  </div>
+
+  <div class="setup-split">
+
+    <!-- LEFT: Mode pane -->
+    <div class="chat-pane" id="pane-chat">
+
+      <!-- Mode picker header -->
+      <div class="mode-head">
+        <button class="mode-btn active" id="mode-ai"     onclick="switchMode('ai')">✦ AI Generate</button>
+        <button class="mode-btn"        id="mode-manual" onclick="switchMode('manual')">✎ Manual</button>
+      </div>
+
+      <!-- AI chat view -->
+      <div id="ai-view" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-chips" id="chat-chips"></div>
+        <div class="chat-footer">
+          <textarea class="chat-inp" id="chat-inp" placeholder="Tell me about Christine, themes, inside jokes…" rows="1"></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendChat()">↑</button>
+        </div>
+      </div>
+
+      <!-- Manual entry view -->
+      <div id="manual-view" style="display:none;flex-direction:column;flex:1;overflow-y:auto;padding:1rem">
+        <div class="manual-hint">Enter your category names — questions can be filled in the Board Config panel.</div>
+        <div id="manual-cats-wrap"></div>
+        <button class="manual-add-btn" onclick="addManualCat()">+ Add Category</button>
+        <button class="btn primary" style="margin-top:1rem" onclick="applyManual()">✦ Build Board</button>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Live config -->
+    <div class="config-pane" id="pane-config">
+      <div class="config-empty" id="config-empty">
+        <svg class="disco-idle" viewBox="0 0 80 80" fill="none">
+          <line x1="40" y1="2" x2="40" y2="15" stroke="#1a8585" stroke-width="1.5"/>
+          <circle cx="40" cy="44" r="26" stroke="#1a8585" stroke-width="1.5" fill="none"/>
+          <ellipse cx="40" cy="44" rx="26" ry="10" stroke="#1a8585" stroke-width="1" fill="none" opacity=".5"/>
+          <ellipse cx="40" cy="44" rx="26" ry="18" stroke="#1a8585" stroke-width="1" fill="none" opacity=".45"/>
+          <ellipse cx="40" cy="35" rx="19" ry="7" stroke="#1a8585" stroke-width="1" fill="none" opacity=".38"/>
+          <line x1="14" y1="44" x2="66" y2="44" stroke="#1a8585" stroke-width="1" opacity=".45"/>
+          <line x1="40" y1="18" x2="40" y2="70" stroke="#1a8585" stroke-width="1" opacity=".45"/>
+          <path d="M66 27 L68.5 22.5 L71 27 L68.5 31.5Z" fill="#1a8585" opacity=".48"/>
+          <path d="M10 34 L12.5 29.5 L15 34 L12.5 38.5Z" fill="#1a8585" opacity=".35"/>
+          <circle cx="64" cy="39" r="1.6" fill="#1a8585" opacity=".42"/>
+          <circle cx="16" cy="51" r="1.3" fill="#1a8585" opacity=".3"/>
+        </svg>
+        <p>Use AI chat or Manual mode to build your board. It'll appear here for editing.</p>
+      </div>
+      <div id="config-board" style="display:none">
+        <div class="config-lbl">Board Configuration — click any field to edit</div>
+        <div id="cat-cards"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: BOARD  (#board)
+     Host-projected game board
+═══════════════════════════════════════ -->
+<div id="page-board" class="page">
+
+  <nav class="nav">
+    <button class="logo" onclick="go('setup')">
+      <svg width="20" height="20" viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="44" r="26" stroke="#1a8585" stroke-width="2" fill="none"/>
+        <ellipse cx="40" cy="44" rx="26" ry="10" stroke="#1a8585" stroke-width="1.2" fill="none" opacity=".5"/>
+        <line x1="14" y1="44" x2="66" y2="44" stroke="#1a8585" stroke-width="1.2" opacity=".4"/>
+        <line x1="40" y1="18" x2="40" y2="70" stroke="#1a8585" stroke-width="1.2" opacity=".4"/>
+      </svg>
+      <div><em>Christine's</em>JEOPARDY!</div>
+    </button>
+    <div class="nav-actions">
+      <button class="btn" onclick="go('setup')">← Edit Board</button>
+      <button class="btn" onclick="toggleQR()">📱 Players</button>
+      <button class="btn" onclick="addPlayer()">+ Player</button>
+      <button class="btn danger" onclick="resetGame()">Reset</button>
+    </div>
+  </nav>
+
+  <!-- QR dropdown — inside #page-board so position:absolute works correctly -->
+  <div class="qr-panel" id="qr-panel">
+    <div class="qr-label">Scan to Join</div>
+    <div id="qrcode"></div>
+    <div class="qr-url" id="qr-url"></div>
+  </div>
+
+  <!-- Demo mode banner -->
+  <div class="demo-banner" id="demo-banner" style="display:none">
+    <span>👀 <strong>Demo Mode</strong> — sample board loaded. Click any card to try it out.</span>
+    <button class="demo-dismiss" onclick="dismissDemo()">Got it</button>
+  </div>
+
+  <!-- Scores -->
+  <div class="score-bar" id="score-bar">
+    <button class="add-player-btn" onclick="addPlayer()">+</button>
+  </div>
+
+  <!-- Board grid -->
+  <div class="board-area">
+    <div class="board-grid" id="board-grid"></div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE: PLAYER  (#player)
+     Phone buzzer — reached via QR
+═══════════════════════════════════════ -->
+<div id="page-player" class="page">
+  <div class="player-logo">JEOPARDY!</div>
+  <div class="player-sub">Christine's Bachelorette ✦</div>
+
+  <div id="player-join">
+    <div class="join-hint">Enter your name to get your buzzer!</div>
+    <input class="join-field" id="player-name" type="text" placeholder="Your name" maxlength="20"/>
+    <button class="join-btn" onclick="joinGame()">Join Game ✦</button>
+  </div>
+
+  <div id="player-buzz">
+    <div class="buzz-row">
+      <div class="buzz-badge" id="buzz-badge">Player</div>
+      <div class="buzz-pts"   id="buzz-pts">$0</div>
+    </div>
+    <div class="buzz-rings">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <button class="buzz-btn" id="buzz-btn" onclick="buzzIn()">BUZZ</button>
+    </div>
+    <div class="buzz-status" id="buzz-status">Waiting for a question…</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODAL (global overlay)
+═══════════════════════════════════════ -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-bar" id="modal-bar"></div>
+    <div class="m-buzz" id="m-buzz">
+      <div class="m-buzz-name" id="m-buzz-name">🔔 Someone buzzed in!</div>
+      <div class="m-buzz-sub">Award points or mark wrong</div>
+    </div>
+    <div class="m-cat" id="m-cat"></div>
+    <div class="m-val" id="m-val"></div>
+    <div class="m-q"   id="m-q"></div>
+    <div class="m-ans" id="m-ans">
+      <div class="ans-lbl">Answer</div>
+      <div class="ans-txt" id="ans-txt"></div>
+    </div>
+    <div class="modal-btns" id="modal-btns"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════
+   CONSTANTS — declared first so everything below can reference them
+═══════════════════════════════════════ */
+const VALS = [200, 400, 600, 800, 1000];
+const PAGES = { setup:'page-setup', board:'page-board', player:'page-player' };
+const CHIPS_INIT = ['Tell me about Christine 💍', 'We have inside jokes', 'Mamma Mia themed 🎶', 'NYC girl group'];
+const CHIPS_EDIT = ['Add a category', 'Make it funnier', 'More Andrew questions', 'Harder $800–$1000'];
+
+const DEMO_BOARD = [
+  {
+    name: "ALL ABOUT CHRISTINE",
+    questions: [
+      { q: "The city Christine and Andrew call home", a: "New York City" },
+      { q: "Christine's go-to cocktail order", a: "Aperol Spritz" },
+      { q: "The movie Christine could watch on repeat forever", a: "Mamma Mia" },
+      { q: "Christine's dream vacation destination", a: "Amalfi Coast" },
+      { q: "The year Christine and Andrew first met", a: "2019" }
+    ]
+  },
+  {
+    name: "ANDREW TRIVIA",
+    questions: [
+      { q: "Andrew's signature move when he's nervous", a: "Runs his hand through his hair" },
+      { q: "Andrew's go-to order at a restaurant", a: "Whatever sounds most interesting" },
+      { q: "The sport Andrew thinks he's better at than he actually is", a: "Golf" },
+      { q: "Andrew's love language, according to Christine", a: "Acts of service" },
+      { q: "The first thing Andrew said to Christine when they met", a: "Ask your MOH — she was there!" }
+    ]
+  },
+  {
+    name: "NYC LIFE",
+    questions: [
+      { q: "Christine and Andrew's favorite neighborhood brunch spot", a: "TBD by your MOH" },
+      { q: "The subway line Christine refuses to take", a: "Whichever one is always delayed" },
+      { q: "Their go-to date night borough", a: "Manhattan" },
+      { q: "The NYC landmark where Andrew proposed", a: "Fill this in!" },
+      { q: "Christine's coffee order at her regular café", a: "Oat milk latte" }
+    ]
+  },
+  {
+    name: "WEDDING FACTS",
+    questions: [
+      { q: "The wedding date", a: "Coming soon!" },
+      { q: "How many bridesmaids are in the party?", a: "Fill in the real number" },
+      { q: "The wedding venue city", a: "TBD" },
+      { q: "Christine's something borrowed", a: "Ask Christine!" },
+      { q: "The song for the first dance", a: "TBD — it's a surprise" }
+    ]
+  },
+  {
+    name: "MAMMA MIA",
+    questions: [
+      { q: "The ABBA song playing when Christine walks in tonight", a: "Dancing Queen" },
+      { q: "The actress who plays Sophie in the original Mamma Mia", a: "Amanda Seyfried" },
+      { q: "Donna's girl group name in Mamma Mia", a: "Donna and the Dynamos" },
+      { q: "The Greek island where Mamma Mia is set", a: "Kalokairi (based on Skopelos)" },
+      { q: "The sequel's full title", a: "Mamma Mia! Here We Go Again" }
+    ]
+  }
+];
+
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+let G = { categories:[], used:{}, players:[], activeQ:null, buzzerOpen:false, buzzedPlayer:null };
+let chatHist = [];
+let myIdx = null;
+let boardReady = false;
+let pollTimer = null;
+let currentMode = 'ai';
+let manualCatCount = 0;
+let isDemo = false;
+let qrBuilt = false;
+
+/* ═══════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════ */
+function x(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, dur = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('on'), dur);
+}
+
+function broadcast() {
+  localStorage.setItem('cj_state', JSON.stringify(G));
+}
+
+/* ═══════════════════════════════════════
+   ROUTER
+═══════════════════════════════════════ */
+function go(page) {
+  history.pushState({ page }, '', '#' + page);
+  render(page);
+}
+
+function render(page) {
+  Object.values(PAGES).forEach(id => document.getElementById(id).classList.remove('active'));
+  const id = PAGES[page] || PAGES.setup;
+  document.getElementById(id).classList.add('active');
+  if (page === 'board') {
+    buildBoard();
+    renderScores();
+    genQR();
+    startPoll();
+    document.getElementById('demo-banner').style.display = isDemo ? 'flex' : 'none';
+  }
+}
+
+/* ═══════════════════════════════════════
+   SETUP TABS (mobile panel switching)
+═══════════════════════════════════════ */
+function switchSetupTab(tab) {
+  const chatPane   = document.getElementById('pane-chat');
+  const configPane = document.getElementById('pane-config');
+  const tabChat    = document.getElementById('tab-chat');
+  const tabConfig  = document.getElementById('tab-config');
+  if (tab === 'chat') {
+    chatPane.classList.remove('tab-hidden');
+    configPane.classList.add('tab-hidden');
+    tabChat.classList.add('active');
+    tabConfig.classList.remove('active');
+  } else {
+    configPane.classList.remove('tab-hidden');
+    chatPane.classList.add('tab-hidden');
+    tabConfig.classList.add('active');
+    tabChat.classList.remove('active');
+  }
+}
+
+/* ═══════════════════════════════════════
+   MODE SWITCHING (AI vs Manual)
+═══════════════════════════════════════ */
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('mode-ai').classList.toggle('active', mode === 'ai');
+  document.getElementById('mode-manual').classList.toggle('active', mode === 'manual');
+  document.getElementById('ai-view').style.display     = mode === 'ai'     ? 'flex' : 'none';
+  document.getElementById('manual-view').style.display = mode === 'manual' ? 'flex' : 'none';
+  if (mode === 'manual' && document.getElementById('manual-cats-wrap').children.length === 0) {
+    for (let i = 0; i < 5; i++) addManualCat();
+  }
+}
+
+/* ═══════════════════════════════════════
+   MANUAL FORM
+═══════════════════════════════════════ */
+function addManualCat() {
+  manualCatCount++;
+  const wrap = document.getElementById('manual-cats-wrap');
+  const row = document.createElement('div');
+  row.className = 'manual-cat-row';
+  row.id = 'mrow-' + manualCatCount;
+  const n = wrap.children.length + 1;
+  row.innerHTML = `
+    <span class="manual-cat-num">CAT ${n}</span>
+    <input class="manual-cat-inp" placeholder="e.g. Things Andrew Says" />
+    <button class="manual-cat-del" onclick="removeManualCat('mrow-${manualCatCount}')" title="Remove">✕</button>
+  `;
+  wrap.appendChild(row);
+  renumberManualCats();
+}
+
+function removeManualCat(id) {
+  document.getElementById(id)?.remove();
+  renumberManualCats();
+}
+
+function renumberManualCats() {
+  document.querySelectorAll('.manual-cat-num').forEach((el, i) => {
+    el.textContent = 'CAT ' + (i + 1);
+  });
+}
+
+function applyManual() {
+  const inputs = document.querySelectorAll('.manual-cat-inp');
+  const cats = [];
+  inputs.forEach(inp => {
+    const name = inp.value.trim() || ('Category ' + (cats.length + 1));
+    cats.push({ name, questions: VALS.map(() => ({ q: '', a: '' })) });
+  });
+  if (!cats.length) { toast('Add at least one category first'); return; }
+  isDemo = false;
+  applyBoard(cats);
+  switchSetupTab('config');
+  toast('✦ Board created! Fill in questions on the right.');
+}
+
+/* ═══════════════════════════════════════
+   DEMO
+═══════════════════════════════════════ */
+function loadDemo() {
+  isDemo = true;
+  G.categories = DEMO_BOARD.map(cat => ({
+    name: cat.name,
+    questions: VALS.map((_, ri) => cat.questions[ri] || { q: '', a: '' })
+  }));
+  G.players = [
+    { name: 'Team Bride', score: 400 },
+    { name: 'Maid of Honor', score: 200 },
+    { name: 'Besties', score: 0 },
+  ];
+  G.used = { '0-0': true, '2-1': true, '4-0': true };
+  boardReady = true;
+  broadcast();
+  renderConfig();
+  document.getElementById('btn-open-board').disabled = false;
+}
+
+function dismissDemo() {
+  document.getElementById('demo-banner').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════
+   CONFIG BOARD (right pane)
+═══════════════════════════════════════ */
+function applyBoard(categories) {
+  isDemo = false;
+  G.categories = categories.map(cat => ({
+    name: cat.name,
+    questions: VALS.map((_, ri) => cat.questions?.[ri] || { q: '', a: '' })
+  }));
+  G.used = {};
+  boardReady = true;
+  renderConfig();
+  document.getElementById('btn-open-board').disabled = false;
+  if (window.innerWidth <= 700) switchSetupTab('config');
+}
+
+function renderConfig() {
+  document.getElementById('config-empty').style.display = 'none';
+  document.getElementById('config-board').style.display = 'block';
+  const wrap = document.getElementById('cat-cards');
+  wrap.innerHTML = '';
+  G.categories.forEach((cat, ci) => {
+    const card = document.createElement('div');
+    card.className = 'cat-card';
+    card.id = 'cc-' + ci;
+    card.style.animationDelay = (ci * 0.05) + 's';
+    card.innerHTML = `
+      <div class="cat-head" onclick="toggleCat(${ci})">
+        <span class="cat-num">CAT ${ci + 1}</span>
+        <input class="cat-name-inp" value="${x(cat.name)}" placeholder="Category name"
+          oninput="G.categories[${ci}].name=this.value" onclick="event.stopPropagation()"/>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="cat-qs">
+        <div class="q-col-lbls">
+          <div class="q-col-lbl"></div>
+          <div class="q-col-lbl">Question</div>
+          <div class="q-col-lbl">Answer</div>
+        </div>
+        ${VALS.map((v, ri) => {
+          const q = cat.questions[ri] || { q: '', a: '' };
+          return `<div class="q-row">
+            <div class="q-val">$${v}</div>
+            <textarea class="q-field" rows="2" placeholder="Question…"
+              oninput="G.categories[${ci}].questions[${ri}].q=this.value">${x(q.q)}</textarea>
+            <textarea class="q-field ans" rows="2" placeholder="Answer…"
+              oninput="G.categories[${ci}].questions[${ri}].a=this.value">${x(q.a)}</textarea>
+          </div>`;
+        }).join('')}
+      </div>`;
+    wrap.appendChild(card);
+  });
+}
+
+function toggleCat(ci) {
+  document.getElementById('cc-' + ci)?.classList.toggle('collapsed');
+}
+
+/* ═══════════════════════════════════════
+   CHAT
+═══════════════════════════════════════ */
+function addMsg(role, text) {
+  const w = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = 'msg ' + role;
+  d.textContent = text;
+  w.appendChild(d);
+  w.scrollTop = w.scrollHeight;
+}
+
+function addTyping() {
+  const w = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = 'msg ai typing';
+  d.innerHTML = '<span></span><span></span><span></span>';
+  w.appendChild(d);
+  w.scrollTop = w.scrollHeight;
+  return d;
+}
+
+function setChips(list) {
+  const c = document.getElementById('chat-chips');
+  c.innerHTML = '';
+  list.forEach(lbl => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = lbl;
+    b.onclick = () => { document.getElementById('chat-inp').value = lbl; sendChat(); };
+    c.appendChild(b);
+  });
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chat-inp');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  inp.style.height = 'auto';
+  addMsg('user', text);
+  chatHist.push({ role: 'user', content: text });
+  setChips([]);
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  const typing = addTyping();
+
+  const boardCtx = G.categories.length
+    ? '\n\nCURRENT BOARD:\n' + JSON.stringify(G.categories, null, 2)
+    : '';
+
+  const sys = `You are a warm, fun Jeopardy board designer for Christine's bachelorette party (NYC, June 12–14 2026).
+
+Workflow:
+- Chat naturally for 2–3 turns to learn about the group. Ask ONE question per turn.
+- Once you have enough info (or user requests it), generate the full board.
+- If a board already exists (see CURRENT BOARD), update it based on the user's request and return the full updated board.
+- Always write 1–2 friendly sentences before outputting JSON.
+
+JSON output — raw JSON only, no markdown, no fences:
+{"categories":[{"name":"CATEGORY NAME","questions":[{"q":"...","a":"..."},{"q":"...","a":"..."},{"q":"...","a":"..."},{"q":"...","a":"..."},{"q":"...","a":"..."}]}]}
+
+Rules: exactly 5 categories, 5 questions each. Difficulty rises $200→$1000.
+Make it personal, fun, bachelorette-appropriate: bride trivia, "how well do you know Christine", NYC life, Andrew & relationship facts, pop culture she loves.${boardCtx}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        system: sys,
+        messages: chatHist
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || '';
+    typing.remove();
+    chatHist.push({ role: 'assistant', content: reply });
+
+    // Extract JSON board if present
+    const jsonStart = reply.indexOf('{"categories"');
+    if (jsonStart !== -1) {
+      try {
+        const board = JSON.parse(reply.substring(jsonStart));
+        if (board.categories?.length) {
+          const pre = reply.substring(0, jsonStart).trim();
+          addMsg('ai', pre || (boardReady
+            ? '✦ Board updated! Check the changes on the right.'
+            : '✦ Your board is ready! Edit anything on the right, then open the Game Board.'));
+          applyBoard(board.categories);
+          setChips(CHIPS_EDIT);
+          btn.disabled = false;
+          return;
+        }
+      } catch (_) {}
+    }
+    addMsg('ai', reply);
+    setChips(boardReady ? CHIPS_EDIT : CHIPS_INIT);
+  } catch (_) {
+    typing.remove();
+    addMsg('ai', "Couldn't reach the AI — check your connection, or edit the board manually on the right.");
+    setChips(boardReady ? CHIPS_EDIT : CHIPS_INIT);
+  }
+  btn.disabled = false;
+}
+
+/* ═══════════════════════════════════════
+   BOARD PAGE
+═══════════════════════════════════════ */
+function buildBoard() {
+  const grid = document.getElementById('board-grid');
+  const cats = G.categories;
+  if (!cats.length) return;
+
+  const cols = cats.length;
+  const rows = VALS.length;
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  // header row auto, then N equal rows filling remaining space
+  grid.style.gridTemplateRows = `auto repeat(${rows}, 1fr)`;
+  grid.innerHTML = '';
+
+  // Category headers
+  cats.forEach(c => {
+    const h = document.createElement('div');
+    h.className = 'cat-cell';
+    h.textContent = c.name;
+    grid.appendChild(h);
+  });
+
+  // Question cells
+  VALS.forEach((v, ri) => {
+    cats.forEach((c, ci) => {
+      const key = `${ci}-${ri}`;
+      const el = document.createElement('div');
+      el.className = 'q-cell' + (G.used[key] ? ' used' : '');
+      el.id = 'cell-' + key;
+      el.innerHTML = `<span class="dollar">$${v}</span>`;
+      if (!G.used[key]) el.onclick = () => openQ(ci, ri, v);
+      grid.appendChild(el);
+    });
+  });
+}
+
+/* ═══════════════════════════════════════
+   QUESTION MODAL
+═══════════════════════════════════════ */
+function openQ(ci, ri, val) {
+  const key = `${ci}-${ri}`;
+  if (G.used[key]) return;
+  G.activeQ = { ci, ri, val, key };
+  G.buzzerOpen = true;
+  G.buzzedPlayer = null;
+
+  const q = G.categories[ci]?.questions[ri];
+  document.getElementById('m-cat').textContent = G.categories[ci].name;
+  document.getElementById('m-val').textContent = '$' + val;
+  document.getElementById('m-q').textContent   = q?.q || '—';
+  document.getElementById('ans-txt').textContent = q?.a || '—';
+  document.getElementById('m-ans').classList.remove('on');
+  document.getElementById('modal-bar').classList.add('on');
+  document.getElementById('m-buzz').classList.remove('on');
+  modalBtns(false);
+  document.getElementById('modal-bg').classList.add('on');
+  broadcast();
+}
+
+function modalBtns(revealed) {
+  const wrap = document.getElementById('modal-btns');
+  if (!revealed) {
+    wrap.innerHTML = `
+      <button class="mbtn reveal" onclick="revealAns()">Reveal Answer</button>
+      <button class="mbtn skip"   onclick="closeQ(false)">Skip</button>`;
+  } else {
+    wrap.innerHTML =
+      G.players.map((p, i) =>
+        `<button class="mbtn award" onclick="award(${i})">✓ ${x(p.name)}</button>`
+      ).join('') +
+      `<button class="mbtn wrong" onclick="closeQ(true)">✗ No one</button>`;
+  }
+}
+
+function revealAns() {
+  document.getElementById('m-ans').classList.add('on');
+  modalBtns(true);
+}
+
+function award(idx) {
+  if (!G.activeQ) return;
+  const { val } = G.activeQ;
+  G.players[idx].score += val;
+  const name = G.players[idx].name;
+  closeQ(true);
+  renderScores();
+  toast('✦ +$' + val + ' → ' + name + '!');
+}
+
+function closeQ(markUsed) {
+  if (markUsed && G.activeQ) {
+    G.used[G.activeQ.key] = true;
+    const el = document.getElementById('cell-' + G.activeQ.key);
+    if (el) { el.classList.add('used'); el.onclick = null; }
+  }
+  G.activeQ = null;
+  G.buzzerOpen = false;
+  G.buzzedPlayer = null;
+  document.getElementById('modal-bg').classList.remove('on');
+  document.getElementById('modal-bar').classList.remove('on');
+  broadcast();
+  if (Object.keys(G.used).length >= G.categories.length * VALS.length)
+    toast('🥂 Game Over! Final scores are in!', 5000);
+}
+
+/* ═══════════════════════════════════════
+   SCORES
+═══════════════════════════════════════ */
+function renderScores() {
+  const bar = document.getElementById('score-bar');
+  bar.innerHTML = '';
+  G.players.forEach((p, i) => {
+    const c = document.createElement('div');
+    c.className = 'score-card' + (G.buzzedPlayer === i ? ' buzzed' : '');
+    c.id = 'sc-' + i;
+    const sign = p.score < 0 ? '-' : '';
+    c.innerHTML = `<div class="s-name">${x(p.name)}</div>
+                   <div class="s-val ${p.score<0?'neg':''}">${sign}$${Math.abs(p.score).toLocaleString()}</div>`;
+    bar.appendChild(c);
+  });
+  const add = document.createElement('button');
+  add.className = 'add-player-btn';
+  add.textContent = '+';
+  add.onclick = addPlayer;
+  bar.appendChild(add);
+}
+
+function addPlayer() {
+  const name = prompt('Player name:');
+  if (!name?.trim()) return;
+  G.players.push({ name: name.trim(), score: 0 });
+  renderScores();
+  broadcast();
+}
+
+/* ═══════════════════════════════════════
+   QR CODE
+═══════════════════════════════════════ */
+function genQR() {
+  if (qrBuilt) return;
+  qrBuilt = true;
+  const url = window.location.href.split('#')[0] + '#player';
+  document.getElementById('qr-url').textContent = url;
+  const div = document.getElementById('qrcode');
+  div.innerHTML = '';
+  new QRCode(div, {
+    text: url, width: 142, height: 142,
+    colorDark: '#0d3d3d', colorLight: '#ede8df',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+function toggleQR() { document.getElementById('qr-panel').classList.toggle('on'); }
+
+/* ═══════════════════════════════════════
+   RESET
+═══════════════════════════════════════ */
+function resetGame() {
+  if (!confirm('Reset scores and board?')) return;
+  G.used = {}; G.activeQ = null; G.buzzerOpen = false; G.buzzedPlayer = null;
+  G.players.forEach(p => p.score = 0);
+  buildBoard();
+  renderScores();
+  broadcast();
+}
+
+/* ═══════════════════════════════════════
+   PLAYER / BUZZER
+═══════════════════════════════════════ */
+function joinGame() {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) return;
+  const saved = localStorage.getItem('cj_state');
+  if (saved) G = JSON.parse(saved);
+  const ex = G.players.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+  if (ex >= 0) myIdx = ex;
+  else { G.players.push({ name, score: 0 }); myIdx = G.players.length - 1; broadcast(); }
+  document.getElementById('player-join').style.display = 'none';
+  document.getElementById('player-buzz').style.display = 'flex';
+  document.getElementById('buzz-badge').textContent = name;
+  syncPts();
+  startPoll();
+}
+
+function buzzIn() {
+  const state = shared();
+  if (!state?.buzzerOpen) { setStatus('No active question', ''); return; }
+  if (state.buzzedPlayer !== null) { setStatus('Too late! 😅', 'late'); flashBuzz('late'); return; }
+  state.buzzedPlayer = myIdx;
+  state.buzzerOpen = false;
+  localStorage.setItem('cj_state', JSON.stringify(state));
+  setStatus("You're in! 🎉", 'success');
+  flashBuzz('success');
+}
+
+function flashBuzz(cls) {
+  const b = document.getElementById('buzz-btn');
+  b.disabled = true;
+  b.className = 'buzz-btn ' + cls;
+  setTimeout(() => {
+    b.disabled = false;
+    b.className = 'buzz-btn';
+    setStatus('Waiting for a question…', '');
+  }, 2800);
+}
+
+function setStatus(txt, type) {
+  const el = document.getElementById('buzz-status');
+  el.textContent = txt;
+  el.className = 'buzz-status' + (type ? ' ' + type : '');
+}
+
+function syncPts() {
+  const state = shared() || G;
+  const p = state.players?.[myIdx];
+  if (!p) return;
+  const sign = p.score < 0 ? '-' : '';
+  document.getElementById('buzz-pts').textContent = sign + '$' + Math.abs(p.score).toLocaleString();
+}
+
+function shared() {
+  const s = localStorage.getItem('cj_state');
+  return s ? JSON.parse(s) : null;
+}
+
+/* ═══════════════════════════════════════
+   POLLING (player score sync + host buzz detection)
+═══════════════════════════════════════ */
+function startPoll() {
+  if (pollTimer) return; // don't double-start
+  pollTimer = setInterval(() => {
+    const state = shared();
+    if (!state) return;
+
+    // Sync player score display
+    if (document.getElementById('page-player').classList.contains('active')) {
+      syncPts();
+    }
+
+    // Host: detect new buzz from players
+    if (document.getElementById('page-board').classList.contains('active')) {
+      if (state.buzzedPlayer !== null && G.buzzedPlayer === null) {
+        G.buzzedPlayer = state.buzzedPlayer;
+        const pname = G.players[G.buzzedPlayer]?.name || 'Someone';
+        document.getElementById('m-buzz-name').textContent = '🔔 ' + pname + ' buzzed in!';
+        document.getElementById('m-buzz').classList.add('on');
+        renderScores();
+        revealAns();
+      }
+    }
+  }, 400);
+}
+
+/* ═══════════════════════════════════════
+   BOOT — runs after all functions defined
+═══════════════════════════════════════ */
+(function boot() {
+  // Init chat UI
+  addMsg('ai', "Hey! 🥂 I'm your Jeopardy board builder. Tell me about Christine — who she is, her relationship with Andrew, the vibe of the group, and any inside jokes or things she loves. Once I have enough to go on, I'll generate a full board you can edit in the Board Config tab!");
+  setChips(CHIPS_INIT);
+
+  const inp = document.getElementById('chat-inp');
+  inp.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 84) + 'px';
+  });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  });
+
+  // Mobile: start with config pane hidden
+  document.getElementById('pane-config').classList.add('tab-hidden');
+
+  // Load demo so board is immediately previewable
+  loadDemo();
+
+  // Route to correct page
+  const hash = window.location.hash.replace('#', '') || 'setup';
+  if (hash === 'player') {
+    const saved = localStorage.getItem('cj_state');
+    if (saved) G = JSON.parse(saved);
+  }
+  render(hash);
+})();
+
+window.addEventListener('popstate', e => render(e.state?.page || 'setup'));
+</script>
+</body>
+</html>
