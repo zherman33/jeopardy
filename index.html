@@ -1178,42 +1178,7 @@ html, body {
     </div>
   </nav>
 
-  <!-- Tab strip — only visible on narrow screens -->
-  <div class="setup-tabs" id="setup-tabs">
-    <button class="setup-tab active" id="tab-chat" onclick="switchSetupTab('chat')">💬 Chat</button>
-    <button class="setup-tab" id="tab-config" onclick="switchSetupTab('config')">🎯 Board Config</button>
-  </div>
-
   <div class="setup-split">
-
-    <!-- LEFT: Mode pane -->
-    <div class="chat-pane" id="pane-chat">
-
-      <!-- Mode picker header -->
-      <div class="mode-head">
-        <button class="mode-btn active" id="mode-ai"     onclick="switchMode('ai')">✦ AI Generate</button>
-        <button class="mode-btn"        id="mode-manual" onclick="switchMode('manual')">✎ Manual</button>
-      </div>
-
-      <!-- AI chat view -->
-      <div id="ai-view" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
-        <div class="chat-msgs" id="chat-msgs"></div>
-        <div class="chat-chips" id="chat-chips"></div>
-        <div class="chat-footer">
-          <textarea class="chat-inp" id="chat-inp" placeholder="Tell me about Christine, themes, inside jokes…" rows="1"></textarea>
-          <button class="send-btn" id="send-btn" onclick="sendChat()">↑</button>
-        </div>
-      </div>
-
-      <!-- Manual entry view -->
-      <div id="manual-view" style="display:none;flex-direction:column;flex:1;overflow-y:auto;padding:1rem">
-        <div class="manual-hint">Enter your category names — questions can be filled in the Board Config panel.</div>
-        <div id="manual-cats-wrap"></div>
-        <button class="manual-add-btn" onclick="addManualCat()">+ Add Category</button>
-        <button class="btn primary" style="margin-top:1rem" onclick="applyManual()">✦ Build Board</button>
-      </div>
-
-    </div>
 
     <!-- RIGHT: Live config -->
     <div class="config-pane" id="pane-config">
@@ -1668,7 +1633,6 @@ function applyBoard(categories) {
   boardReady = true;
   renderConfig();
   document.getElementById('btn-open-board').disabled = false;
-  if (window.innerWidth <= 700) switchSetupTab('config');
 }
 
 function renderConfig() {
@@ -2079,22 +2043,6 @@ function startPoll() {
    BOOT — runs after all functions defined
 ═══════════════════════════════════════ */
 (function boot() {
-  // Init chat UI
-  addMsg('ai', "Hey! 🥂 I'm your Jeopardy board builder. Tell me about Christine — who she is, her relationship with Andrew, the vibe of the group, and any inside jokes or things she loves. Once I have enough to go on, I'll generate a full board you can edit in the Board Config tab!");
-  setChips(CHIPS_INIT);
-
-  const inp = document.getElementById('chat-inp');
-  inp.addEventListener('input', function () {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 84) + 'px';
-  });
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
-  });
-
-  // Mobile: start with config pane hidden
-  document.getElementById('pane-config').classList.add('tab-hidden');
-
   // Load demo so board is immediately previewable
   loadDemo();
 
